@@ -145,6 +145,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .float-btn{position:fixed;bottom:20px;right:20px;z-index:50;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border:none;box-shadow:0 4px 20px var(--pglow);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:all var(--t);display:none}
 .float-btn:active{transform:scale(0.9)}
+.ai-score{margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.ai-section{padding:12px 14px;background:linear-gradient(135deg,rgba(108,92,231,0.04),rgba(0,206,201,0.04));border:1px solid var(--gborder);border-radius:var(--rs);margin-bottom:8px;transition:all var(--t)}
+.ai-section:hover{border-color:rgba(108,92,231,0.2)}
+.ai-section-header{font-size:12px;font-weight:600;margin-bottom:4px;color:var(--accent);letter-spacing:.3px}
+.ai-section-body{font-size:12px;color:var(--text2);line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.ai-section-body strong{color:var(--text);font-weight:600}
+.ai-opt-item{padding:8px 10px;background:var(--bg2);border:1px solid var(--gborder);border-radius:7px;margin-bottom:4px;font-size:12px;line-height:1.5}
+.ai-opt-item:last-child{margin-bottom:0}
+.ai-opt-label{font-size:10px;color:var(--text3);margin-bottom:2px;font-weight:500}
 </style>
 </head>
 <body>
@@ -172,6 +181,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <span class="key-label">🔑 API Key</span>
     <input class="key-input" id="apiKey" type="text" placeholder="AIzaSy... (free, get from Google Cloud Console)" autocomplete="off" spellcheck="false">
     <span class="key-status" id="keyStatus">✅ saved</span>
+  </div>
+  <div class="key-row" style="padding-top:0">
+    <span class="key-label">🤖 AI Key</span>
+    <input class="key-input" id="aiApiKey" type="text" placeholder="Gemini API key (free at aistudio.google.com/apikey)" autocomplete="off" spellcheck="false">
+    <span class="key-status" id="aiKeyStatus">✅ saved</span>
   </div>
 
   <div class="content" id="content">
@@ -457,6 +471,126 @@ function generateThumbnailText(vd){
   return s.slice(0,5);
 }
 
+// =============== AI ANALYSIS ===============
+
+async function callGemini(prompt, apiKey) {
+  if (!apiKey) return null;
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    signal: AbortSignal.timeout(30000)
+  });
+  if (!r.ok) { let e = await r.json().catch(()=>({})); throw new Error(e?.error?.message || 'Gemini API error'); }
+  const d = await r.json();
+  return d?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+}
+
+function parseAISections(text) {
+  if (!text) return [];
+  return text.split(/(?=## )/).filter(Boolean).map(s => {
+    const m = s.match(/^## (.+)\n([\s\S]*)$/);
+    return m ? { header: m[1].trim(), content: m[2].trim() } : { header: '', content: s.trim() };
+  });
+}
+
+function renderAIAnalysis(sections, score) {
+  let extra = '';
+  if (score !== null) {
+    const g = score >= 80 ? 'good' : score >= 50 ? 'ok' : 'bad';
+    extra = `<div class="ai-score"><span class="score-badge ${g}">🤖 ${score}/100</span></div>`;
+  }
+  return extra + sections.map(s => {
+    let body = esc(s.content);
+    // Parse simple markdown: **bold** -> <strong>
+    body = body.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Parse numbered items for Quick Wins
+    let items = s.header.includes('Quick Wins') ? s.content.match(/^\d+\.\s+.+/gm) : null;
+    if (items) {
+      const rest = s.content.replace(/^\d+\.\s+.+(\n|$)/gm, '').trim();
+      body = (rest ? `<div class="ai-section-body">${esc(rest).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>` : '') +
+        items.map((item, i) => `<div class="ai-opt-item"><span class="ai-opt-label">Quick Win #${i+1}</span>${esc(item.replace(/^\d+\.\s+/, '')).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>`).join('');
+    }
+    // Parse title options
+    if (s.header.includes('Title Analysis')) {
+      const opts = s.content.match(/\d\.\s+"[^"]+"/g);
+      if (opts && opts.length >= 2) {
+        const intro = s.content.replace(/\d\.\s+"[^"]+"[^\n]*(\n|$)/g, '').trim();
+        body = (intro ? `<div class="ai-section-body">${esc(intro).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>` : '') +
+          opts.map(o => `<div class="ai-opt-item"><span class="ai-opt-label">Suggested Title</span>${esc(o).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>`).join('');
+      }
+    }
+    // Parse tags
+    if (s.header.includes('Tags Analysis')) {
+      const tags = s.content.match(/"([^"]+)"/g);
+      if (tags && tags.length >= 3) {
+        const intro = s.content.replace(/"([^"]+)"/g, '').trim();
+        body = (intro ? `<div class="ai-section-body">${esc(intro).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>` : '') +
+          `<div class="gen-tags" style="margin-top:6px">${tags.map(t => `<span>${esc(t.replace(/"/g,''))}</span>`).join('')}</div>`;
+      }
+    }
+    return `<div class="ai-section">${s.header ? `<div class="ai-section-header">${esc(s.header)}</div>` : ''}${body}</div>`;
+  }).join('');
+}
+
+async function generateAIAnalysis(vd) {
+  const aiKey = $('aiApiKey').value.trim();
+  if (!aiKey) {
+    $('aiOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">🤖</div>Add your free Gemini API key above for AI-powered SEO insights<br><span style="font-size:12px;color:var(--text3)">Get one at aistudio.google.com/apikey</span></div>`;
+    return;
+  }
+  $('aiOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">⏳</div><div>AI analyzing your video...</div><span class="spinner" style="margin:8px auto 0"></span></div>`;
+
+  const escPrompt = s => (s||'').replace(/"/g,'\\"').replace(/\n/g,' ').substring(0,300);
+  const prompt = `You are a YouTube SEO expert. Analyze this video and return structured analysis.
+
+VIDEO DATA:
+Title: "${escPrompt(vd.title)}"
+Description: "${escPrompt(vd.description)}"
+Tags: ${(vd.tags||[]).map(t=>'"'+t+'"').join(', ')||'N/A'}
+Channel: "${escPrompt(vd.author)}"
+Views: ${vd.viewCount||'N/A'}
+Duration: ${vd.lengthSeconds?Math.floor(vd.lengthSeconds/60)+'min '+(vd.lengthSeconds%60)+'s':'N/A'}
+Category: ${vd.category||'N/A'}
+Likes: ${vd.likeCount||'N/A'}  Comments: ${vd.commentCount||'N/A'}
+
+Return in this exact format with these exact ## headers:
+
+## AI Score & Assessment
+Start with "Score: X/100" then brief assessment.
+
+## Title Analysis
+Critique current title. Give 2-3 optimized title suggestions in quotes with reasoning.
+
+## Description Analysis
+Analyze gaps, keyword usage, structure. Suggest specific improvements.
+
+## Tags Analysis
+Evaluate tags. Recommend 10-15 specific SEO tags for this video in quotes.
+
+## Thumbnail Strategy
+Suggest thumbnail focus, text overlay, colors.
+
+## Content Strategy Tips
+3-5 strategic tips for this content type.
+
+## Top 3 Quick Wins
+3 most impactful changes ordered by priority. Start each with "1. ", "2. ", "3. ".
+
+Keep each section concise (2-4 sentences). Be specific, not generic.`;
+
+  try {
+    const response = await callGemini(prompt, aiKey);
+    if (!response) { $('aiOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>AI returned empty. Try again.</div>`; return; }
+    const sections = parseAISections(response);
+    let score = null;
+    if (sections.length > 0) { const m = sections[0].content.match(/Score\s*[:：]?\s*(\d+)\s*\/\s*100/i); if (m) score = parseInt(m[1]); }
+    $('aiOutput').innerHTML = renderAIAnalysis(sections, score);
+    toast('🤖 AI analysis complete!');
+  } catch (e) {
+    $('aiOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">❌</div>AI analysis failed: ${esc(e.message)}</div>`;
+  }
+}
+
 function generateSEOCopy(vd){return{titles:generateTitleSuggestions(vd),description:generateDescription(vd),tags:generateTags(vd),hashtags:generateHashtags(vd),thumbText:generateThumbnailText(vd)}}
 
 // =============== MAIN ===============
@@ -524,6 +658,7 @@ function runFullAnalysis(videoId,thumbQual){
     engagement:analyzeEngagement(vd),duration:analyzeDuration(vd),published:analyzePublishDate(vd),category:analyzeCategory(vd)
   };
   showResults(results,generateRecommendations(results),vd,videoId);
+  setTimeout(()=>generateAIAnalysis(vd),200);
 }
 
 function showResults(results,recs,vd,videoId){
@@ -574,6 +709,11 @@ function showResults(results,recs,vd,videoId){
     <div class="card fade-in">
       <div class="section-title">📋 Recommendations <span class="st-badge">${recs.length}</span></div>
       <div class="rec-list">${recs.map(r=>`<div class="rec-card"><div class="rec-title">${r.title}</div><div class="rec-body">${r.body}</div></div>`).join('')}</div>
+    </div>
+
+    <div class="card fade-in" id="sec-ai">
+      <div class="section-title">🤖 AI Analysis <span class="st-badge">Gemini</span></div>
+      <div id="aiOutput">${$('aiApiKey')?.value?.trim() ? '<div class="empty-state"><div class="empty-icon">⏳</div>Generating AI insights...</div>' : '<div class="empty-state"><div class="empty-icon">🤖</div>Add your free Gemini API key above for AI-powered SEO insights<br><span style="font-size:12px;color:var(--text3)">Get one at aistudio.google.com/apikey</span></div>'}</div>
     </div>
 
     <div class="card fade-in" id="sec-title">
@@ -666,6 +806,7 @@ function reanalyze(videoId){
   let vd=buildVideoData(videoId,'maxresdefault');if(desc)vd.description=desc;if(allTags.length)vd.tags=allTags;
   let results={title:analyzeTitle(vd.title),description:analyzeDescription(desc||'',vd.description),tags:analyzeTags(allTags,[]),thumbnail:analyzeThumbnail(vd.thumbQual),channel:analyzeChannel(S.oembed,S.fullData),engagement:analyzeEngagement(vd),duration:analyzeDuration(vd),published:analyzePublishDate(vd),category:analyzeCategory(vd)};
   S.tags=allTags;showResults(results,generateRecommendations(results),vd,videoId);
+  setTimeout(()=>generateAIAnalysis(vd),200);
 }
 
 function showManualForm(videoId){
@@ -689,6 +830,7 @@ function manualAnalyze(videoId){
   S.oembed={author_name:'Unknown',author_url:'',thumbnail_url:vd.thumbUrl,title};
   let results={title:analyzeTitle(title),description:analyzeDescription(desc,''),tags:analyzeTags(allTags,[]),thumbnail:analyzeThumbnail(null),channel:[{i:'💡',t:'Channel info not provided',d:'Enter manually.',a:'Channel optimization matters.'}],engagement:[{i:'💡',t:'Engagement data unavailable',d:'Manual mode.',a:'Check YouTube Studio.'}],duration:[{i:'💡',t:'Duration not provided',d:'Enter manually.',a:'10-20 min is ideal.'}],published:[{i:'💡',t:'Date not provided',d:'Enter manually.',a:'Newer content ranks better.'}],category:[{i:'💡',t:'Category not provided',d:'Choose in YouTube Studio.',a:'Helps recommendations.'}]};
   showResults(results,generateRecommendations(results),vd,videoId);
+  setTimeout(()=>generateAIAnalysis(vd),200);
 }
 
 function generateSEO(auto){
@@ -765,6 +907,7 @@ function renderTags(){let c=$('tagsContainer');if(!c)return;let inp=c.querySelec
 document.addEventListener('DOMContentLoaded',()=>{
   try{
     let savedKey=localStorage.getItem('ytseo_key');if(savedKey){$('apiKey').value=savedKey;$('keyStatus').style.display='inline'}
+    let savedAI=localStorage.getItem('ytseo_aikey');if(savedAI){$('aiApiKey').value=savedAI;$('aiKeyStatus').style.display='inline'}
     let savedTheme=localStorage.getItem('ytseo_theme');if(savedTheme==='light'){S.theme='light';document.documentElement.setAttribute('data-theme','light');$('themeBtn').textContent='☀️'}
   }catch(e){}
   document.documentElement.setAttribute('data-theme',S.theme==='dark'?'':'light');
@@ -776,6 +919,7 @@ $('urlInput').addEventListener('input',function(){
 });
 $('urlInput').addEventListener('keydown',e=>{if(e.key==='Enter'){clearTimeout(autoTimer);analyze()}});
 $('apiKey').addEventListener('input',function(){if(this.value.trim())try{localStorage.setItem('ytseo_key',this.value.trim());$('keyStatus').style.display='inline'}catch(e){}});
+$('aiApiKey').addEventListener('input',function(){let v=this.value.trim();if(v)try{localStorage.setItem('ytseo_aikey',v);$('aiKeyStatus').style.display='inline'}catch(e){}});
 // Floating button visibility
 window.addEventListener('scroll',()=>{
   let fb=$('floatBtn');if(!fb)return;
