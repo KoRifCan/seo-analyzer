@@ -37,6 +37,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .key-input:focus{border-color:var(--accent)}
 .key-input::placeholder{color:var(--text3);font-size:11px}
 .key-label{font-size:11px;color:var(--text2);white-space:nowrap;font-weight:500}
+.key-help{width:20px;height:20px;border:none;border-radius:50%;background:var(--surface);color:var(--text3);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all var(--t);padding:0;line-height:1}
+.key-help:active{transform:scale(0.9)}
+.key-help:hover{background:var(--shover);color:var(--accent)}
 .key-status{font-size:10px;color:var(--success);display:none;font-weight:500}
 .content{max-width:860px;margin:0 auto;padding:0 20px 40px;display:none;animation:fadeIn .4s ease}
 .fade-in{animation:fadeIn .35s ease}
@@ -179,13 +182,23 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
   <div class="key-row">
     <span class="key-label">🔑 API Key</span>
+    <button class="key-help" onclick="toggleKeyGuide()" title="Cara mendapatkan key" id="keyHelpBtn">❓</button>
     <input class="key-input" id="apiKey" type="text" placeholder="AIzaSy... (free, get from Google Cloud Console)" autocomplete="off" spellcheck="false">
     <span class="key-status" id="keyStatus">✅ saved</span>
   </div>
   <div class="key-row" style="padding-top:0">
     <span class="key-label">🤖 AI Key</span>
+    <button class="key-help" onclick="window.open('https://aistudio.google.com/apikey','_blank')" title="How to get a Gemini API key">❓</button>
     <input class="key-input" id="aiApiKey" type="text" placeholder="Gemini API key (free at aistudio.google.com/apikey)" autocomplete="off" spellcheck="false">
     <span class="key-status" id="aiKeyStatus">✅ saved</span>
+  </div>
+  <div class="key-row" id="keyGuide" style="padding-top:0;display:none">
+    <div style="background:var(--surface);border:1px solid var(--gborder);border-radius:var(--rs);padding:10px 12px;width:100%;font-size:11px;line-height:1.6;color:var(--text2)">
+      <div style="font-weight:600;margin-bottom:4px;color:var(--text)">🔑 Cara mendapatkan API Key:</div>
+      <b>YouTube API Key:</b> Buka <a href="#" onclick="window.open('https://console.cloud.google.com/apis/credentials','_blank');return false" style="color:var(--accent)">Google Cloud Console</a> → Buat project → Enable <b>YouTube Data API v3</b> → Create Credentials → API Key<br>
+      <b>Gemini AI Key:</b> Buka <a href="#" onclick="window.open('https://aistudio.google.com/apikey','_blank');return false" style="color:var(--accent)">Google AI Studio</a> → Get API Key → Create API Key<br>
+      <span style="color:var(--text3);font-size:10px">Keduanya gratis. Kalau sudah punya key, tinggal paste di input di atas.</span>
+    </div>
   </div>
 
   <div class="content" id="content">
@@ -203,6 +216,7 @@ function toast(m){let c=$('toast'),t=document.createElement('div');t.className='
 function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',S.theme==='dark'?'':'light');$('themeBtn').textContent=S.theme==='dark'?'🌙':'☀️';try{localStorage.setItem('ytseo_theme',S.theme)}catch(e){}}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function jsStr(s){return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'')}
+function toggleKeyGuide(){let g=$('keyGuide');g.style.display=g.style.display==='none'?'block':'none'}
 function fmtNum(n){if(!n||n==='0')return'—';n=Number(n);if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString()}
 function fmtDur(s){if(!s)return'—';let m=Math.floor(s/60),h=Math.floor(m/60);m=m%60;s=Math.floor(s%60);return h>0?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`}
 function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}catch(e){return d}}
