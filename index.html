@@ -1250,7 +1250,7 @@ function renderFullMetadata(v,ch){
   }
   return `<div class="meta-table">${rows.map(r=>r.divider
     ?`<div style="font-weight:600;font-size:12px;color:var(--accent);padding:10px 14px 2px">${r.label}</div>`
-    :`<div class="meta-row"><span class="meta-label">${esc(r.label)}</span><span class="meta-value">${esc(r.val)}</span><button class="meta-copy" onclick="copyText('${jsStr(r.val)}')">📋</button></div>`
+    :`<div class="meta-row"><span class="meta-label">${esc(r.label)}</span><span class="meta-value">${esc(r.val).replace(/\r\n/g,'<br>').replace(/\n/g,'<br>')}</span><button class="meta-copy" onclick="copyText('${jsStr(r.val)}')">📋</button></div>`
   ).join('')}</div>`;
 }
 
