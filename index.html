@@ -1202,7 +1202,7 @@ async function loadFullMetadata(videoId, auto){
 function renderFullMetadata(v,ch){
   let s=v.snippet||{},cd=v.contentDetails||{},st=v.statistics||{},td=v.topicDetails||{},status=v.status||{};
   let rows=[];
-  let add=(label,val,extraCopy)=>{rows.push({label,val:val||'-',extraCopy});};
+  let add=(label,val)=>{rows.push({label,val:val||'-'});};
   add('Video ID',v.id);
   add('Title',s.title);
   add('Description',s.description||'(empty)');
@@ -1246,11 +1246,9 @@ function renderFullMetadata(v,ch){
     if(cb.channel?.keywords){
       let kw=cb.channel.keywords;
       let m=kw.match(/"([^"]*)"/g);
-      if(m){
-        let phrases=m.map(s=>s.replace(/^"|"$/g,''));
-        add('Channel Keywords',phrases.join(', '),phrases.join('\n'));
-      }else if(kw.includes(','))add('Channel Keywords',kw.split(',').map(s=>s.trim()).join(', '));
-      else add('Channel Keywords',kw);
+      if(m)kw=m.map(s=>s.replace(/^"|"$/g,'')).join(', ');
+      else if(kw.includes(','))kw=kw.split(',').map(s=>s.trim()).join(', ');
+      add('Channel Keywords',kw);
     }
     if(cb.channel?.defaultTab)add('Default Tab',cb.channel.defaultTab);
     if(cb.channel?.showBrowseView)add('Show Browse View',String(cb.channel.showBrowseView));
@@ -1258,9 +1256,7 @@ function renderFullMetadata(v,ch){
   }
   return `<div class="meta-table">${rows.map(r=>r.divider
     ?`<div style="font-weight:600;font-size:12px;color:var(--accent);padding:10px 14px 2px">${r.label}</div>`
-    :`<div class="meta-row"><span class="meta-label">${esc(r.label)}</span><span class="meta-value">${esc(r.val).replace(/\r\n/g,'<br>').replace(/\n/g,'<br>')}</span><div style="display:flex;gap:2px;margin-left:auto">${r.extraCopy
-      ?`<button class="meta-copy" onclick="copyText('${jsStr(r.val)}')" title="Copy comma-separated">📋 ,</button><button class="meta-copy" onclick="copyText('${jsStr(r.extraCopy)}')" title="Copy with line breaks">📋 ↵</button>`
-      :`<button class="meta-copy" onclick="copyText('${jsStr(r.val)}')">📋</button>`}</div></div>`
+    :`<div class="meta-row"><span class="meta-label">${esc(r.label)}</span><span class="meta-value">${esc(r.val).replace(/\r\n/g,'<br>').replace(/\n/g,'<br>')}</span><button class="meta-copy" onclick="copyText('${jsStr(r.val)}')">📋</button></div>`
   ).join('')}</div>`;
 }
 
