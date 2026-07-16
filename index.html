@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0a0a12">
 <title>YouTube SEO Analyzer</title>
 <style>
@@ -605,13 +605,11 @@ function showResults(results,recs,vd,videoId){
     ${tabKeys.map((k,i)=>{
       if(k==='generate')return`
       <div class="tab-body fade-in" id="res-generate">
-        <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
-          <button class="btn-primary" onclick="generateSEO()">✨ Generate SEO Content</button>
-          <span style="font-size:12px;color:var(--text2);flex:1;min-width:120px">Creates optimized titles, description, tags, hashtags &amp; thumbnail text.</span>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--text2)">🤖 Auto-generated SEO suggestions based on your video data.</span>
+          <button class="btn-ghost" style="margin-left:auto" onclick="generateSEO()">🔄 Regenerate</button>
         </div>
-        <div id="genOutput">
-          <div class="empty-state"><div class="empty-icon">✨</div>Click "Generate SEO Content" to create SEO-optimized metadata.</div>
-        </div>
+        <div id="genOutput"><div class="empty-state"><div class="empty-icon">⏳</div>Generating SEO content...</div></div>
       </div>`;
       return`
       <div class="tab-body fade-in" id="res-${k}">
@@ -630,6 +628,7 @@ function showResults(results,recs,vd,videoId){
     }).join('')}
   `;
   $('content').scrollIntoView({behavior:'smooth',block:'start'});
+  if($('genOutput'))setTimeout(()=>generateSEO(true),100);
 }
 
 function reanalyze(videoId){
@@ -662,9 +661,9 @@ function manualAnalyze(videoId){
   showResults(results,generateRecommendations(results),vd,videoId);
 }
 
-function generateSEO(){
+function generateSEO(auto){
   let vd=buildVideoData(S.videoId,'maxresdefault');
-  if(!vd.title){toast('Need a title to generate');return}
+  if(!vd.title){if(!auto)toast('Need a title to generate');return}
   let gen=generateSEOCopy(vd);
   $('genOutput').innerHTML=`
     <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">
@@ -716,8 +715,8 @@ function generateSEO(){
       </div>`).join('')}
     </div>
   `;
-  switchTab('res-generate');
-  toast('✅ SEO content generated!');
+  if(!auto)switchTab('res-generate');
+  if(!auto)toast('✅ SEO content generated!');
 }
 
 function copyText(t){
@@ -753,7 +752,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   }catch(e){}
   document.documentElement.setAttribute('data-theme',S.theme==='dark'?'':'light');
 });
-$('urlInput').addEventListener('keydown',e=>{if(e.key==='Enter')analyze()});
+let autoTimer;
+$('urlInput').addEventListener('input',function(){
+  clearTimeout(autoTimer);
+  autoTimer=setTimeout(()=>{if(extractId(this.value))analyze()},350);
+});
+$('urlInput').addEventListener('keydown',e=>{if(e.key==='Enter'){clearTimeout(autoTimer);analyze()}});
 $('apiKey').addEventListener('input',function(){if(this.value.trim())try{localStorage.setItem('ytseo_key',this.value.trim());$('keyStatus').style.display='inline'}catch(e){}});
 // Floating button visibility
 window.addEventListener('scroll',()=>{
