@@ -108,10 +108,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .gen-copy{font-size:10px;color:var(--text3);cursor:pointer;position:absolute;top:8px;right:8px;padding:2px 6px;border-radius:4px;transition:all var(--t);background:var(--bg2)}
 .gen-copy:hover{background:var(--shover);color:var(--text)}
 .meta-table{font-size:12px;line-height:1.5}
-.meta-row{display:flex;padding:6px 14px;border-bottom:1px solid var(--gborder);gap:12px}
+.meta-row{display:flex;padding:6px 14px;border-bottom:1px solid var(--gborder);gap:12px;align-items:flex-start}
 .meta-row:last-child{border-bottom:none}
-.meta-label{flex:0 0 180px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta-label{flex:0 0 180px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:1px}
 .meta-value{flex:1;color:var(--text1);word-break:break-word}
+.meta-copy{flex-shrink:0;background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;border-radius:4px;color:var(--text3);transition:all var(--t);opacity:0.4}
+.meta-row:hover .meta-copy{opacity:1}
+.meta-copy:hover{background:var(--shover);color:var(--text)}
 @media(max-width:600px){.meta-row{flex-direction:column;padding:5px 12px;gap:2px}.meta-label{flex:none;font-size:11px}}
 .section-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .section-title .st-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--bg2);color:var(--text3)}
@@ -1199,55 +1202,55 @@ async function loadFullMetadata(videoId, auto){
 function renderFullMetadata(v,ch){
   let s=v.snippet||{},cd=v.contentDetails||{},st=v.statistics||{},td=v.topicDetails||{},status=v.status||{};
   let rows=[];
-  rows.push({label:'Video ID',value:v.id});
-  rows.push({label:'Title',value:s.title||'-'});
-  rows.push({label:'Description',value:s.description||'(empty)'});
-  rows.push({label:'Published',value:s.publishedAt?new Date(s.publishedAt).toLocaleString():'-'});
-  rows.push({label:'Channel',value:s.channelTitle||'-'});
-  rows.push({label:'Channel ID',value:s.channelId||'-'});
-  rows.push({label:'Category',value:CAT_MAP[s.categoryId]||s.categoryId||'-'});
-  rows.push({label:'Tags',value:s.tags&&s.tags.length?s.tags.join(', '):'(none)'});
-  rows.push({label:'Default Language',value:s.defaultLanguage||'-'});
-  rows.push({label:'Default Audio Lang',value:s.defaultAudioLanguage||'-'});
-  rows.push({label:'Duration',value:cd.duration||'-'});
-  rows.push({label:'Duration (seconds)',value:cd.duration?fmtIso(cd.duration)||'-':'-'});
-  rows.push({label:'Dimension',value:cd.dimension||'-'});
-  rows.push({label:'Definition',value:cd.definition||'-'});
-  rows.push({label:'Caption',value:cd.caption||'false'});
-  rows.push({label:'Licensed Content',value:String(cd.licensedContent||false)});
-  rows.push({label:'Projection',value:cd.projection||'-'});
-  rows.push({label:'View Count',value:st.viewCount?parseInt(st.viewCount).toLocaleString():'0'});
-  rows.push({label:'Like Count',value:st.likeCount?parseInt(st.likeCount).toLocaleString():'0'});
-  rows.push({label:'Comment Count',value:st.commentCount?parseInt(st.commentCount).toLocaleString():'0'});
-  rows.push({label:'Favorite Count',value:st.favoriteCount||'0'});
-  if(td.topicCategories)rows.push({label:'Topic Categories',value:td.topicCategories.join(', ')});
-  if(td.topicIds)rows.push({label:'Topic IDs',value:td.topicIds.join(', ')});
-  rows.push({label:'Upload Status',value:status.uploadStatus||'-'});
-  rows.push({label:'Privacy Status',value:status.privacyStatus||'-'});
-  rows.push({label:'License',value:status.license||'-'});
-  rows.push({label:'Embeddable',value:String(status.embeddable!==false)});
-  rows.push({label:'Made for Kids',value:String(!!status.madeForKids)});
-  rows.push({label:'Public Stats Viewable',value:String(!!status.publicStatsViewable)});
+  let add=(label,val)=>{rows.push({label,val:val||'-'});};
+  add('Video ID',v.id);
+  add('Title',s.title);
+  add('Description',s.description||'(empty)');
+  add('Published',s.publishedAt?new Date(s.publishedAt).toLocaleString():'-');
+  add('Channel',s.channelTitle);
+  add('Channel ID',s.channelId);
+  add('Category',CAT_MAP[s.categoryId]||s.categoryId);
+  add('Tags',s.tags&&s.tags.length?s.tags.join(', '):'(none)');
+  add('Default Language',s.defaultLanguage);
+  add('Default Audio Lang',s.defaultAudioLanguage);
+  add('Duration',cd.duration);
+  add('Duration (seconds)',cd.duration?String(fmtIso(cd.duration)):'-');
+  add('Dimension',cd.dimension);
+  add('Definition',cd.definition);
+  add('Caption',cd.caption);
+  add('Licensed Content',String(cd.licensedContent||false));
+  add('Projection',cd.projection);
+  add('View Count',st.viewCount?parseInt(st.viewCount).toLocaleString():'0');
+  add('Like Count',st.likeCount?parseInt(st.likeCount).toLocaleString():'0');
+  add('Comment Count',st.commentCount?parseInt(st.commentCount).toLocaleString():'0');
+  add('Favorite Count',st.favoriteCount||'0');
+  if(td.topicCategories)add('Topic Categories',td.topicCategories.join(', '));
+  if(td.topicIds)add('Topic IDs',td.topicIds.join(', '));
+  add('Upload Status',status.uploadStatus);
+  add('Privacy Status',status.privacyStatus);
+  add('License',status.license);
+  add('Embeddable',String(status.embeddable!==false));
+  add('Made for Kids',String(!!status.madeForKids));
+  add('Public Stats Viewable',String(!!status.publicStatsViewable));
   if(ch){
     let cs=ch.snippet||{},cst=ch.statistics||{},cb=ch.brandingSettings||{};
-    rows.push({label:'',value:'',divider:true});
-    rows.push({label:'── CHANNEL ──',value:'',divider:true});
-    rows.push({label:'Title',value:cs.title||'-'});
-    rows.push({label:'Description',value:cs.description||'-'});
-    rows.push({label:'Custom URL',value:cs.customUrl||'-'});
-    rows.push({label:'Published',value:cs.publishedAt?new Date(cs.publishedAt).toLocaleString():'-'});
-    rows.push({label:'Country',value:cs.country||'-'});
-    rows.push({label:'Subscribers',value:cst.hiddenSubscriberCount?'Hidden':cst.subscriberCount?parseInt(cst.subscriberCount).toLocaleString():'0'});
-    rows.push({label:'Total Videos',value:cst.videoCount?parseInt(cst.videoCount).toLocaleString():'0'});
-    rows.push({label:'Total Channel Views',value:cst.viewCount?parseInt(cst.viewCount).toLocaleString():'0'});
-    if(cb.channel?.keywords)rows.push({label:'Channel Keywords',value:cb.channel.keywords});
-    if(cb.channel?.defaultTab)rows.push({label:'Default Tab',value:cb.channel.defaultTab});
-    if(cb.channel?.showBrowseView)rows.push({label:'Show Browse View',value:String(cb.channel.showBrowseView)});
-    if(cb.channel?.moderateComments)rows.push({label:'Moderate Comments',value:String(cb.channel.moderateComments)});
+    rows.push({divider:true,label:'── CHANNEL ──'});
+    add('Title',cs.title);
+    add('Description',cs.description||'-');
+    add('Custom URL',cs.customUrl);
+    add('Published',cs.publishedAt?new Date(cs.publishedAt).toLocaleString():'-');
+    add('Country',cs.country);
+    add('Subscribers',cst.hiddenSubscriberCount?'Hidden':cst.subscriberCount?parseInt(cst.subscriberCount).toLocaleString():'0');
+    add('Total Videos',cst.videoCount?parseInt(cst.videoCount).toLocaleString():'0');
+    add('Total Channel Views',cst.viewCount?parseInt(cst.viewCount).toLocaleString():'0');
+    if(cb.channel?.keywords)add('Channel Keywords',cb.channel.keywords);
+    if(cb.channel?.defaultTab)add('Default Tab',cb.channel.defaultTab);
+    if(cb.channel?.showBrowseView)add('Show Browse View',String(cb.channel.showBrowseView));
+    if(cb.channel?.moderateComments)add('Moderate Comments',String(cb.channel.moderateComments));
   }
   return `<div class="meta-table">${rows.map(r=>r.divider
-    ?`<div style="font-weight:600;font-size:12px;color:var(--accent);padding:10px 14px 2px;border-bottom:none">${r.label||r.value}</div>`
-    :`<div class="meta-row"><span class="meta-label">${esc(r.label)}</span><span class="meta-value">${esc(String(r.value))}</span></div>`
+    ?`<div style="font-weight:600;font-size:12px;color:var(--accent);padding:10px 14px 2px">${r.label}</div>`
+    :`<div class="meta-row"><span class="meta-label">${esc(r.label)}</span><span class="meta-value">${esc(r.val)}</span><button class="meta-copy" onclick="copyText('${jsStr(r.val)}')">📋</button></div>`
   ).join('')}</div>`;
 }
 
