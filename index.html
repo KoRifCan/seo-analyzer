@@ -107,6 +107,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .gen-tags span{padding:2px 8px;background:rgba(108,92,231,0.1);color:var(--primary);border-radius:4px;font-size:11px}
 .gen-copy{font-size:10px;color:var(--text3);cursor:pointer;position:absolute;top:8px;right:8px;padding:2px 6px;border-radius:4px;transition:all var(--t);background:var(--bg2)}
 .gen-copy:hover{background:var(--shover);color:var(--text)}
+.meta-table{font-size:12px;line-height:1.5}
+.meta-row{display:flex;padding:6px 14px;border-bottom:1px solid var(--gborder);gap:12px}
+.meta-row:last-child{border-bottom:none}
+.meta-label{flex:0 0 180px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta-value{flex:1;color:var(--text1);word-break:break-word}
+@media(max-width:600px){.meta-row{flex-direction:column;padding:5px 12px;gap:2px}.meta-label{flex:none;font-size:11px}}
 .section-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .section-title .st-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--bg2);color:var(--text3)}
 .empty-state{text-align:center;padding:30px 20px;color:var(--text3);font-size:13px;line-height:1.6}
@@ -975,6 +981,15 @@ function showResults(results,recs,vd,videoId){
       <div id="genOutput"><div class="empty-state"><div class="empty-icon">🤖</div>Click "Generate" or run AI Analysis</div></div>
     </div>
 
+    <div class="card fade-in" id="sec-fullmeta">
+      <div class="section-title">📋 Full Metadata</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--text2)">Complete YouTube video + channel data</span>
+        <button class="btn-ghost" style="margin-left:auto" onclick="loadFullMetadata('${videoId}')">🔍 Extract All Data</button>
+      </div>
+      <div id="fullMetaOutput"><div class="empty-state"><div class="empty-icon">📋</div>Click "Extract All Data" to fetch everything</div></div>
+    </div>
+
     <div class="card fade-in" id="sec-channel">
       <div class="section-title">📺 Channel <span class="st-badge">${autoStr}</span></div>
       <div class="checks">${(results.channel||[]).map(item=>`
@@ -1154,6 +1169,85 @@ function copyText(t){
   navigator.clipboard.writeText(t).then(()=>toast('📋 Copied!')).catch(()=>{
     let ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('📋 Copied!');
   });
+}
+
+const CAT_MAP={1:'Film & Animation',2:'Autos & Vehicles',10:'Music',15:'Pets & Animals',17:'Sports',18:'Short Movies',19:'Travel & Events',20:'Gaming',21:'Videoblogging',22:'People & Blogs',23:'Comedy',24:'Entertainment',25:'News & Politics',26:'Howto & Style',27:'Education',28:'Science & Technology',29:'Nonprofits',30:'Movies',31:'Anime',32:'Action',33:'Classics',34:'Comedy',35:'Documentary',36:'Drama',37:'Family',38:'Foreign',39:'Horror',40:'Sci-Fi',41:'Thriller',42:'Shorts',43:'Shows',44:'Trailers'};
+
+async function loadFullMetadata(videoId){
+  let apiKey=$('apiKey').value.trim()||DEFAULT_YT_KEY;
+  if(!apiKey){toast('Need API key');return}
+  $('fullMetaOutput').innerHTML='<div class="empty-state"><div class="empty-icon">⏳</div>Fetching full metadata...</div>';
+  try{
+    let r=await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics,topicDetails,status&id=${videoId}&key=${apiKey}`,{signal:AbortSignal.timeout(10000)});
+    if(!r.ok){let e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'API error')}
+    let d=await r.json();
+    if(!d.items||!d.items.length)throw new Error('Video not found');
+    let video=d.items[0];
+    let channel=null;
+    if(video.snippet?.channelId){
+      let rc=await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics,brandingSettings&id=${video.snippet.channelId}&key=${apiKey}`,{signal:AbortSignal.timeout(10000)});
+      let dc=await rc.json();
+      channel=dc.items?.[0]||null;
+    }
+    $('fullMetaOutput').innerHTML=renderFullMetadata(video,channel);
+  }catch(e){
+    $('fullMetaOutput').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div>${esc(e.message)}</div>`;
+  }
+}
+
+function renderFullMetadata(v,ch){
+  let s=v.snippet||{},cd=v.contentDetails||{},st=v.statistics||{},td=v.topicDetails||{},status=v.status||{};
+  let rows=[];
+  rows.push({label:'Video ID',value:v.id});
+  rows.push({label:'Title',value:s.title||'-'});
+  rows.push({label:'Description',value:s.description?s.description.substring(0,600)+(s.description.length>600?'...':''):'(empty)'});
+  rows.push({label:'Published',value:s.publishedAt?new Date(s.publishedAt).toLocaleString():'-'});
+  rows.push({label:'Channel',value:s.channelTitle||'-'});
+  rows.push({label:'Channel ID',value:s.channelId||'-'});
+  rows.push({label:'Category',value:CAT_MAP[s.categoryId]||s.categoryId||'-'});
+  rows.push({label:'Tags',value:s.tags&&s.tags.length?s.tags.join(', '):'(none)'});
+  rows.push({label:'Default Language',value:s.defaultLanguage||'-'});
+  rows.push({label:'Default Audio Lang',value:s.defaultAudioLanguage||'-'});
+  rows.push({label:'Duration',value:cd.duration||'-'});
+  rows.push({label:'Duration (seconds)',value:cd.duration?fmtIso(cd.duration)||'-':'-'});
+  rows.push({label:'Dimension',value:cd.dimension||'-'});
+  rows.push({label:'Definition',value:cd.definition||'-'});
+  rows.push({label:'Caption',value:cd.caption||'false'});
+  rows.push({label:'Licensed Content',value:String(cd.licensedContent||false)});
+  rows.push({label:'Projection',value:cd.projection||'-'});
+  rows.push({label:'View Count',value:st.viewCount?parseInt(st.viewCount).toLocaleString():'0'});
+  rows.push({label:'Like Count',value:st.likeCount?parseInt(st.likeCount).toLocaleString():'0'});
+  rows.push({label:'Comment Count',value:st.commentCount?parseInt(st.commentCount).toLocaleString():'0'});
+  rows.push({label:'Favorite Count',value:st.favoriteCount||'0'});
+  if(td.topicCategories)rows.push({label:'Topic Categories',value:td.topicCategories.join(', ')});
+  if(td.topicIds)rows.push({label:'Topic IDs',value:td.topicIds.join(', ')});
+  rows.push({label:'Upload Status',value:status.uploadStatus||'-'});
+  rows.push({label:'Privacy Status',value:status.privacyStatus||'-'});
+  rows.push({label:'License',value:status.license||'-'});
+  rows.push({label:'Embeddable',value:String(status.embeddable!==false)});
+  rows.push({label:'Made for Kids',value:String(!!status.madeForKids)});
+  rows.push({label:'Public Stats Viewable',value:String(!!status.publicStatsViewable)});
+  if(ch){
+    let cs=ch.snippet||{},cst=ch.statistics||{},cb=ch.brandingSettings||{};
+    rows.push({label:'',value:'',divider:true});
+    rows.push({label:'── CHANNEL ──',value:'',divider:true});
+    rows.push({label:'Title',value:cs.title||'-'});
+    rows.push({label:'Description',value:cs.description?cs.description.substring(0,300)+(cs.description.length>300?'...':''):'-'});
+    rows.push({label:'Custom URL',value:cs.customUrl||'-'});
+    rows.push({label:'Published',value:cs.publishedAt?new Date(cs.publishedAt).toLocaleString():'-'});
+    rows.push({label:'Country',value:cs.country||'-'});
+    rows.push({label:'Subscribers',value:cst.hiddenSubscriberCount?'Hidden':cst.subscriberCount?parseInt(cst.subscriberCount).toLocaleString():'0'});
+    rows.push({label:'Total Videos',value:cst.videoCount?parseInt(cst.videoCount).toLocaleString():'0'});
+    rows.push({label:'Total Channel Views',value:cst.viewCount?parseInt(cst.viewCount).toLocaleString():'0'});
+    if(cb.channel?.keywords)rows.push({label:'Channel Keywords',value:cb.channel.keywords});
+    if(cb.channel?.defaultTab)rows.push({label:'Default Tab',value:cb.channel.defaultTab});
+    if(cb.channel?.showBrowseView)rows.push({label:'Show Browse View',value:String(cb.channel.showBrowseView)});
+    if(cb.channel?.moderateComments)rows.push({label:'Moderate Comments',value:String(cb.channel.moderateComments)});
+  }
+  return `<div class="meta-table">${rows.map(r=>r.divider
+    ?`<div style="font-weight:600;font-size:12px;color:var(--accent);padding:10px 14px 2px;border-bottom:none">${r.label||r.value}</div>`
+    :`<div class="meta-row"><span class="meta-label">${esc(r.label)}</span><span class="meta-value">${esc(String(r.value))}</span></div>`
+  ).join('')}</div>`;
 }
 
 // Tags
