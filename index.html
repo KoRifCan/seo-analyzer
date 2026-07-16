@@ -634,6 +634,39 @@ function renderAICopyReady(jsonData) {
   return html + '</div>';
 }
 
+async function generateAISEO(vd) {
+  const aiKey = $('aiApiKey').value.trim() || DEFAULT_AI_KEY;
+  if (!aiKey) return null;
+  const escP = s => (s||'').replace(/"/g,'\\"').replace(/\n/g,' ').substring(0,500);
+  const prompt = `Generate YouTube SEO content for this video. Return ONLY valid JSON.
+
+VIDEO: Title="${escP(vd.title)}" Description="${escP(vd.description)}" Tags=${(vd.tags||[]).map(t=>'"'+t+'"').join(',')||'N/A'} Channel="${escP(vd.author)}" Category=${vd.category||'N/A'}
+
+Return this exact JSON:
+{"titles":[{"text":"Title 1","reason":"why this works"},{"text":"Title 2","reason":"why"}],"description":"Full description 200+ chars","tags":["tag1","tag2"],"hashtags":["#h1","#h2"],"thumbnailText":["Text 1","Text 2","Text 3"],"thumbnailPrompt":"detailed image prompt"}
+
+Rules: titles=3 with reasoning. description=200+ chars with timestamps & links. tags=10-15. hashtags=3-5. thumbnailText=3. thumbnailPrompt=50+ words. No markdown, no code blocks, just raw JSON.`;
+  try {
+    const result = await callGemini(prompt, aiKey);
+    if (!result || !result.text) return null;
+    // Try to extract JSON from response
+    let json = result.text;
+    const m = json.match(/\{(?:[^{}]|'(?:[^'\\]|\\.)*'|\"(?:[^\"\\]|\\.)*\"|(?:[^{}]))*\}/s);
+    if (m) json = m[0];
+    const d = JSON.parse(json);
+    if (!d.titles || !d.description) return null;
+    // Normalize to match generateSEOCopy format
+    return {
+      titles: d.titles.map(t => ({ t: t.text || t, w: t.reason || '' })),
+      description: d.description,
+      tags: d.tags || [],
+      hashtags: d.hashtags || [],
+      thumbText: (d.thumbnailText || []).map(t => ({ t, w: 'AI-generated thumbnail text option' })),
+      thumbnailPrompt: d.thumbnailPrompt || ''
+    };
+  } catch(e) { return null; }
+}
+
 async function generateAIAnalysis(vd) {
   const aiKey = $('aiApiKey').value.trim() || DEFAULT_AI_KEY;
   if (!aiKey) {
@@ -1015,20 +1048,26 @@ function manualAnalyze(videoId){
   setTimeout(()=>generateAIAnalysis(vd),200);
 }
 
-function generateSEO(auto){
+async function generateSEO(auto){
   let vd=buildVideoData(S.videoId,'maxresdefault');
   if(!vd.title){if(!auto)toast('Need a title to generate');return}
-  let gen=generateSEOCopy(vd);
+  let gen;
+  // Try AI first
+  if (auto) $('genOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">⏳</div>AI generating SEO content...</div>`;
+  try { gen = await generateAISEO(vd); } catch(e) {}
+  if (!gen) gen = generateSEOCopy(vd);
+  if (!gen) { $('genOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Could not generate SEO content.</div>`; return; }
+  let isAI = gen.titles && gen.titles[0] && gen.titles[0].w && gen.titles[0].w !== '';
   $('genOutput').innerHTML=`
     <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">
       <div style="padding:12px 14px;border-bottom:1px solid var(--gborder)">
-        <div class="section-title" style="margin-bottom:0">🎯 Title Suggestions (${gen.titles.length})</div>
+        <div class="section-title" style="margin-bottom:0">🎯 Title Suggestions (${gen.titles.length}) <span class="st-badge">${isAI?'AI':'rule'}</span></div>
       </div>
       ${gen.titles.map(s=>`
       <div class="gen-item" style="border:none;border-bottom:1px solid var(--gborder);border-radius:0;margin:0">
         <span class="gen-copy" onclick="copyText('${esc(s.t)}')">📋 copy</span>
         <div class="gen-value" style="font-weight:600">${esc(s.t)}</div>
-        <div class="gen-why">${s.w}</div>
+        <div class="gen-why">${s.w||'Optimized title'}</div>
       </div>`).join('')}
     </div>
     <div class="card" style="margin-bottom:10px">
@@ -1063,14 +1102,22 @@ function generateSEO(auto){
           <div class="gen-value" style="font-size:16px;font-weight:700">${esc(s.t)}</div>
         </div>
         <div style="flex:1;min-width:0">
-          <div class="gen-why">${s.w}</div>
+          <div class="gen-why">${s.w||'AI suggestion'}</div>
         </div>
         <button class="btn-ghost" style="flex-shrink:0;padding:4px 10px;font-size:11px" onclick="copyText('${esc(s.t)}')">📋</button>
       </div>`).join('')}
     </div>
+    ${gen.thumbnailPrompt ? `
+    <div class="card" style="margin-top:10px;margin-bottom:0">
+      <div class="section-title" style="margin-bottom:6px">🎨 Thumbnail AI Prompt</div>
+      <div class="gen-item" style="display:flex;align-items:flex-start;gap:8px">
+        <div class="gen-value" style="font-size:12px;line-height:1.6;flex:1">${esc(gen.thumbnailPrompt)}</div>
+        <button class="btn-ghost" style="flex-shrink:0;padding:3px 8px;font-size:10px" onclick="copyText('${jsStr(gen.thumbnailPrompt)}')">📋</button>
+      </div>
+    </div>` : ''}
   `;
   if(!auto){let el=$('sec-generate');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
-  if(!auto)toast('✅ SEO content regenerated!');
+  if(!auto)toast((isAI?'🤖':'✅')+' SEO content regenerated!');
 }
 
 function copyText(t){
