@@ -560,6 +560,20 @@ function renderAICopyReady(jsonData) {
     });
     html += '</div>';
   }
+  if (jsonData.thumbnailPrompt) {
+    html += `<div><div class="gen-label" style="margin-bottom:4px">🎨 AI Image Prompt</div>
+      <div style="display:flex;gap:6px;align-items:flex-start">
+        <div class="gen-value" style="font-size:12px;line-height:1.6;flex:1;background:var(--bg2);padding:8px 10px;border-radius:7px">${esc(jsonData.thumbnailPrompt)}</div>
+        <button class="btn-ghost" style="flex-shrink:0;padding:3px 8px;font-size:10px" onclick="copyText('${jsStr(jsonData.thumbnailPrompt)}')">📋</button>
+      </div>
+      <div id="thumbGenArea" style="margin-top:6px">
+        <button class="btn-ghost" id="thumbGenBtn" onclick="generateAiThumbnail('${jsStr(jsonData.thumbnailPrompt)}')">✨ Generate Image</button>
+      </div>`;
+    if (jsonData.thumbnailImage) {
+      html += `<div style="margin-top:8px"><img src="data:image/png;base64,${jsonData.thumbnailImage}" alt="AI generated thumbnail" style="width:100%;max-width:320px;border-radius:var(--rs);border:1px solid var(--gborder)"></div>`;
+    }
+    html += '</div>';
+  }
   return html + '</div>';
 }
 
@@ -610,10 +624,10 @@ Suggest thumbnail focus, text overlay, colors.
 After all ## sections, add a copyable JSON block at the end:
 ---COPYPASTE---
 \`\`\`json
-{"titles":[{"text":"Title Option 1","reason":"why"}],"description":"Full description here","tags":["tag1","tag2"],"hashtags":["#tag1","#tag2"],"thumbnailText":["Text 1","Text 2"]}
+{"titles":[{"text":"Title Option 1","reason":"why"},{"text":"Title Option 2","reason":"why"},{"text":"Title Option 3","reason":"why"}],"description":"Full description template here (200+ chars with timestamps, links, hashtags)","tags":["tag1","tag2","tag3"],"hashtags":["#tag1","#tag2"],"thumbnailText":["Text 1","Text 2","Text 3"],"thumbnailPrompt":"Detailed prompt for generating a YouTube thumbnail image (describe composition, colors, text overlay, style)"}
 \`\`\`
 
-The titles must be 3 options. Description must be complete (200+ chars ready to paste). Tags 10-15. Hashtags 3-5. ThumbnailText 3 options. Keep each ## section concise (2-4 sentences). Be specific, not generic.`;
+The titles must be 3 options. Description must be complete (200+ chars ready to paste). Tags 10-15. Hashtags 3-5. ThumbnailText 3 options. thumbnailPrompt must be a detailed image generation prompt (50+ words). Keep each ## section concise (2-4 sentences). Be specific, not generic.`;
 
   try {
     const response = await callGemini(prompt, aiKey);
@@ -652,6 +666,48 @@ The titles must be 3 options. Description must be complete (200+ chars ready to 
         • Click <button class="btn-ghost" style="padding:2px 10px;font-size:11px;display:inline-flex" onclick="generateAIAnalysis(buildVideoData(S.videoId,'maxresdefault'))">⟳ Retry</button> after ${waitSec ? waitSec+'s' : '~60s'}
       </div>` :
       `<div class="empty-state"><div class="empty-icon">❌</div>AI analysis failed: ${msg}</div>`;
+  }
+}
+
+async function generateAiThumbnail(prompt) {
+  const btn = $('thumbGenBtn');
+  if (!btn) return;
+  const area = $('thumbGenArea');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating...';
+  const apiKey = $('aiApiKey').value.trim();
+  if (!apiKey) { btn.disabled = false; btn.innerHTML = '✨ Generate Image'; toast('Enter AI key first'); return; }
+  // Try Imagen 4 Fast Generate
+  const models = ['imagen-4.0-fast-generate-001', 'imagen-4.0-generate-001', 'imagen-3.0-generate-001'];
+  let imgBase64 = null;
+  for (const model of models) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${apiKey}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ instances: [{ prompt }], parameters: { sampleCount: 1 } }),
+        signal: AbortSignal.timeout(30000)
+      });
+      if (!r.ok) continue;
+      const d = await r.json();
+      const pred = d?.predictions?.[0];
+      imgBase64 = pred?.bytesBase64Encoded || pred?.image?.bytesBase64Encoded || null;
+      if (imgBase64) break;
+    } catch(e) { continue; }
+  }
+  btn.disabled = false;
+  btn.innerHTML = '✨ Generate Image';
+  if (imgBase64) {
+    const imgHtml = `<div style="margin-top:8px"><img src="data:image/png;base64,${imgBase64}" alt="AI thumbnail" style="width:100%;max-width:320px;border-radius:var(--rs);border:1px solid var(--gborder);box-shadow:0 4px 20px rgba(0,0,0,0.3)"></div>
+      <button class="btn-ghost" style="margin-top:6px;font-size:11px" onclick="copyText('${jsStr(prompt)}')">📋 Copy Prompt</button>
+      <button class="btn-ghost" style="margin-top:6px;font-size:11px" onclick="var i=this.parentElement.querySelector('img');if(i){var a=document.createElement('a');a.href=i.src;a.download='youtube-thumbnail.png';a.click();toast('⬇️ Downloading...')}">⬇️ Download</button>`;
+    area.innerHTML = imgHtml;
+    toast('🖼️ Thumbnail generated!');
+  } else {
+    area.innerHTML = `<div style="display:flex;gap:6px;align-items:center;margin-top:6px">
+      <span style="font-size:11px;color:var(--text3)">⚠️ Image generation unavailable (quota or model not enabled)</span>
+      <button class="btn-ghost" style="padding:2px 10px;font-size:11px" onclick="generateAiThumbnail('${jsStr(prompt)}')">⟳ Retry</button>
+    </div>`;
+    toast('⚠️ Could not generate image');
   }
 }
 
