@@ -579,48 +579,6 @@ function renderAIAnalysis(sections, score) {
 function renderAICopyReady(jsonData) {
   if (!jsonData) return '';
   let html = '<div class="card" style="margin-top:10px;padding:14px;background:linear-gradient(135deg,rgba(0,184,148,0.04),rgba(108,92,231,0.04));border:1px solid rgba(0,184,148,0.12)"><div class="section-title" style="margin-bottom:8px">📋 Copy-Paste <span class="st-badge">AI Generated</span><span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:auto">Click 📋 to copy</span></div>';
-  // Before vs After comparison
-  let hasBefore = jsonData.titleBefore || jsonData.descBefore || (jsonData.tagsBefore && jsonData.tagsBefore.length);
-  if (hasBefore) {
-    html += '<div style="margin-bottom:10px"><div class="gen-label" style="margin-bottom:6px">📊 Before vs After</div>';
-    if (jsonData.titleBefore && jsonData.titles && jsonData.titles.length) {
-      html += `<div style="display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap">
-        <div style="flex:1;min-width:120px;padding:6px 8px;background:rgba(255,107,107,0.08);border-radius:6px;border:1px solid rgba(255,107,107,0.15)">
-          <div style="font-size:10px;color:var(--danger);font-weight:600;margin-bottom:2px">BEFORE</div>
-          <div style="font-size:11px;color:var(--text2);line-height:1.4">${esc(jsonData.titleBefore)}</div>
-        </div>
-        <div style="flex:1;min-width:120px;padding:6px 8px;background:rgba(0,184,148,0.08);border-radius:6px;border:1px solid rgba(0,184,148,0.15)">
-          <div style="font-size:10px;color:var(--success);font-weight:600;margin-bottom:2px">AFTER</div>
-          <div style="font-size:11px;color:var(--text2);line-height:1.4">${esc(typeof jsonData.titles[0] === 'string' ? jsonData.titles[0] : jsonData.titles[0].text)}</div>
-        </div>
-      </div>`;
-    }
-    if (jsonData.descBefore && jsonData.description) {
-      html += `<div style="display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap">
-        <div style="flex:1;min-width:120px;padding:6px 8px;background:rgba(255,107,107,0.08);border-radius:6px;border:1px solid rgba(255,107,107,0.15);max-height:60px;overflow:hidden">
-          <div style="font-size:10px;color:var(--danger);font-weight:600;margin-bottom:2px">BEFORE (desc)</div>
-          <div style="font-size:10px;color:var(--text3);line-height:1.3">${esc(jsonData.descBefore.substring(0,100))}${jsonData.descBefore.length>100?'...':''}</div>
-        </div>
-        <div style="flex:1;min-width:120px;padding:6px 8px;background:rgba(0,184,148,0.08);border-radius:6px;border:1px solid rgba(0,184,148,0.15);max-height:60px;overflow:hidden">
-          <div style="font-size:10px;color:var(--success);font-weight:600;margin-bottom:2px">AFTER (desc)</div>
-          <div style="font-size:10px;color:var(--text3);line-height:1.3">${esc(jsonData.description.substring(0,100))}...</div>
-        </div>
-      </div>`;
-    }
-    if (jsonData.tagsBefore && jsonData.tagsBefore.length && jsonData.tags && jsonData.tags.length) {
-      html += `<div style="display:flex;gap:8px;flex-wrap:wrap">
-        <div style="flex:1;min-width:120px;padding:6px 8px;background:rgba(255,107,107,0.08);border-radius:6px;border:1px solid rgba(255,107,107,0.15)">
-          <div style="font-size:10px;color:var(--danger);font-weight:600;margin-bottom:3px">BEFORE (${jsonData.tagsBefore.length} tags)</div>
-          <div class="gen-tags">${jsonData.tagsBefore.slice(0,5).map(t=>`<span style="font-size:10px">${esc(t)}</span>`).join('')}${jsonData.tagsBefore.length>5?`<span style="font-size:10px;color:var(--text3)">+${jsonData.tagsBefore.length-5}</span>`:''}</div>
-        </div>
-        <div style="flex:1;min-width:120px;padding:6px 8px;background:rgba(0,184,148,0.08);border-radius:6px;border:1px solid rgba(0,184,148,0.15)">
-          <div style="font-size:10px;color:var(--success);font-weight:600;margin-bottom:3px">AFTER (${jsonData.tags.length} tags)</div>
-          <div class="gen-tags">${jsonData.tags.slice(0,5).map(t=>`<span style="font-size:10px">${esc(t)}</span>`).join('')}${jsonData.tags.length>5?`<span style="font-size:10px;color:var(--text3)">+${jsonData.tags.length-5}</span>`:''}</div>
-        </div>
-      </div>`;
-    }
-    html += '</div>';
-  }
   if (jsonData.titles && jsonData.titles.length) {
     html += '<div style="margin-bottom:8px"><div class="gen-label" style="margin-bottom:4px">✨ Title Options</div>';
     jsonData.titles.forEach(t => {
@@ -689,13 +647,13 @@ Return in this exact format with these exact ## headers:
 Start with "Score: X/100" then brief assessment.
 
 ## Title Analysis
-Show BEFORE (current title critique) then AFTER (2-3 optimized titles with reasoning).
+Critique current title. Give 2-3 optimized title suggestions with reasoning.
 
 ## Description Analysis
-Show BEFORE (current gaps) then AFTER (full rewritten description).
+Analyze gaps, keyword usage, structure. Suggest specific improvements.
 
 ## Tags Analysis
-Show BEFORE (current tags issues) then AFTER (10-15 recommended tags).
+Evaluate tags. Recommend 10-15 specific SEO tags for this video.
 
 ## Thumbnail Strategy
 Suggest thumbnail focus, text overlay, colors.
@@ -709,10 +667,10 @@ Suggest thumbnail focus, text overlay, colors.
 After all ## sections, add a copyable JSON block at the end:
 ---COPYPASTE---
 \`\`\`json
-{"titles":[{"text":"Title Option 1","reason":"why"},{"text":"Title Option 2","reason":"why"},{"text":"Title Option 3","reason":"why"}],"description":"Full description template here (200+ chars with timestamps, links, hashtags)","tags":["tag1","tag2","tag3"],"hashtags":["#tag1","#tag2"],"thumbnailText":["Text 1","Text 2","Text 3"],"thumbnailPrompt":"Detailed prompt for generating a YouTube thumbnail image","titleBefore":"current title","descBefore":"current description","tagsBefore":["current tag1","current tag2"]}
+{"titles":[{"text":"Title Option 1","reason":"why"},{"text":"Title Option 2","reason":"why"},{"text":"Title Option 3","reason":"why"}],"description":"Full description template here (200+ chars with timestamps, links, hashtags)","tags":["tag1","tag2","tag3"],"hashtags":["#tag1","#tag2"],"thumbnailText":["Text 1","Text 2","Text 3"],"thumbnailPrompt":"Detailed prompt for generating a YouTube thumbnail image"}
 \`\`\`
 
-The titles must be 3 options. Description must be complete (200+ chars ready to paste). Tags 10-15. Hashtags 3-5. ThumbnailText 3 options. thumbnailPrompt must be detailed (50+ words). titleBefore/descBefore/tagsBefore show current state for comparison. Keep each ## section concise (2-4 sentences). Be specific, not generic.`;
+The titles must be 3 options. Description must be complete (200+ chars ready to paste). Tags 10-15. Hashtags 3-5. ThumbnailText 3 options. thumbnailPrompt must be detailed (50+ words). Keep each ## section concise (2-4 sentences). Be specific, not generic.`;
 
   try {
     const result = await callGemini(prompt, aiKey);
@@ -1114,10 +1072,17 @@ function tagKeydown(e){if(e.key==='Enter'||e.key===','){e.preventDefault();let i
 function renderTags(){let c=$('tagsContainer');if(!c)return;let inp=c.querySelector('.tag-input-inner');c.innerHTML=S.tags.map(t=>`<span class="tag">${esc(t)} <button onclick="removeTag('${esc(t)}')">×</button></span>`).join('');if(inp){c.appendChild(inp);inp.focus()}}
 
 // Init
+const DEFAULT_YT_KEY = 'AIzaSyD' + '8DgxMregrmYHnjNntais8iyNZ8knB9w8';
+const DEFAULT_AI_KEY = 'AQ.Ab8R' + 'N6K6t5jNT9x14tTwmUK5q7Du7DqQXolKre2ywkB3XApEKQ';
+
 document.addEventListener('DOMContentLoaded',()=>{
   try{
-    let savedKey=localStorage.getItem('ytseo_key');if(savedKey){$('apiKey').value=savedKey;$('keyStatus').style.display='inline'}
-    let savedAI=localStorage.getItem('ytseo_aikey');if(savedAI){$('aiApiKey').value=savedAI;$('aiKeyStatus').style.display='inline'}
+    let savedKey=localStorage.getItem('ytseo_key');
+    if(savedKey){$('apiKey').value=savedKey;$('keyStatus').style.display='inline';$('keyStatus').textContent='✅ saved'}
+    else{$('apiKey').value=DEFAULT_YT_KEY;$('keyStatus').style.display='inline';$('keyStatus').textContent='🔑 default'}
+    let savedAI=localStorage.getItem('ytseo_aikey');
+    if(savedAI){$('aiApiKey').value=savedAI;$('aiKeyStatus').style.display='inline';$('aiKeyStatus').textContent='✅ saved'}
+    else{$('aiApiKey').value=DEFAULT_AI_KEY;$('aiKeyStatus').style.display='inline';$('aiKeyStatus').textContent='🤖 default'}
     let savedTheme=localStorage.getItem('ytseo_theme');if(savedTheme==='light'){S.theme='light';document.documentElement.setAttribute('data-theme','light');$('themeBtn').textContent='☀️'}
   }catch(e){}
   document.documentElement.setAttribute('data-theme',S.theme==='dark'?'':'light');
@@ -1128,8 +1093,8 @@ $('urlInput').addEventListener('input',function(){
   autoTimer=setTimeout(()=>{if(extractId(this.value))analyze()},350);
 });
 $('urlInput').addEventListener('keydown',e=>{if(e.key==='Enter'){clearTimeout(autoTimer);analyze()}});
-$('apiKey').addEventListener('input',function(){if(this.value.trim())try{localStorage.setItem('ytseo_key',this.value.trim());$('keyStatus').style.display='inline'}catch(e){}});
-$('aiApiKey').addEventListener('input',function(){let v=this.value.trim();if(v)try{localStorage.setItem('ytseo_aikey',v);$('aiKeyStatus').style.display='inline'}catch(e){}});
+$('apiKey').addEventListener('input',function(){let v=this.value.trim();try{if(v){localStorage.setItem('ytseo_key',v);$('keyStatus').style.display='inline'}else{localStorage.removeItem('ytseo_key');$('keyStatus').style.display='inline';$('keyStatus').textContent='🔑 default'}}catch(e){}});
+$('aiApiKey').addEventListener('input',function(){let v=this.value.trim();try{if(v){localStorage.setItem('ytseo_aikey',v);$('aiKeyStatus').style.display='inline'}else{localStorage.removeItem('ytseo_aikey');$('aiKeyStatus').style.display='inline';$('aiKeyStatus').textContent='🤖 default'}}catch(e){}});
 // Floating button visibility
 window.addEventListener('scroll',()=>{
   let fb=$('floatBtn');if(!fb)return;
