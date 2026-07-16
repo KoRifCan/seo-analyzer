@@ -4,13 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0a0a12">
-<meta name="description" content="Free SEO Analyzer — analyze meta tags, headings, images, links, content, technical, schema, security, accessibility, social, and performance">
-<title>SEO Analyzer — Complete Website SEO Check</title>
+<title>YouTube SEO Analyzer</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0a0a12;--bg2:#12121e;--surface:rgba(255,255,255,0.04);--shover:rgba(255,255,255,0.08);--glass:rgba(255,255,255,0.06);--gborder:rgba(255,255,255,0.08);--text:#e8e8f0;--text2:#9090a8;--primary:#6c5ce7;--pglow:rgba(108,92,231,0.3);--accent:#00cec9;--danger:#ff6b6b;--warn:#fdcb6e;--success:#00b894;--radius:16px;--rs:10px;--t:0.3s cubic-bezier(0.4,0,0.2,1)}
 [data-theme="light"]{--bg:#f0f0f5;--bg2:#e4e4ec;--surface:rgba(0,0,0,0.03);--glass:rgba(255,255,255,0.7);--gborder:rgba(0,0,0,0.08);--text:#1a1a2e;--text2:#6b6b80}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--t),color var(--t);overflow-x:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--t),color var(--t)}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 50%,var(--primary) 0%,transparent 50%),radial-gradient(ellipse at 80% 50%,var(--accent) 0%,transparent 50%);opacity:0.05;pointer-events:none;z-index:0}
 .app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
 .header{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;background:var(--glass);backdrop-filter:blur(20px);border-bottom:1px solid var(--gborder);position:sticky;top:0;z-index:100}
@@ -20,677 +19,489 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .h-actions{display:flex;gap:8px}
 .btn-icon{width:36px;height:36px;border:none;border-radius:var(--rs);background:var(--surface);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all var(--t)}
 .btn-icon:hover{background:var(--shover);transform:scale(1.05)}
-.hero{padding:40px 24px 24px;text-align:center}
-.hero h1{font-size:30px;font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{color:var(--text2);font-size:15px;max-width:500px;margin:0 auto}
-.hero .badge{display:inline-block;margin-top:10px;padding:4px 14px;border-radius:20px;background:var(--surface);border:1px solid var(--gborder);font-size:12px;color:var(--text2)}
-.input-section{padding:0 24px 24px;display:flex;gap:10px;max-width:700px;margin:0 auto;flex-wrap:wrap}
-.input-field{flex:1;min-width:200px;padding:14px 18px;background:var(--surface);border:1px solid var(--gborder);border-radius:var(--rs);color:var(--text);font-size:15px;outline:none;transition:all var(--t)}
+.hero{padding:32px 24px 16px;text-align:center}
+.hero h1{font-size:28px;font-weight:800;margin-bottom:6px;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text2);font-size:14px}
+.input-section{padding:0 24px 20px;display:flex;gap:10px;max-width:700px;margin:0 auto;flex-wrap:wrap}
+.input-field{flex:1;min-width:200px;padding:12px 16px;background:var(--surface);border:1px solid var(--gborder);border-radius:var(--rs);color:var(--text);font-size:14px;outline:none;transition:all var(--t)}
 .input-field:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--pglow)}
-.input-field::placeholder{color:var(--text2);opacity:0.5}
-.btn-analyze{padding:14px 28px;background:linear-gradient(135deg,var(--primary),#a29bfe);color:#fff;border:none;border-radius:var(--rs);font-size:15px;font-weight:600;cursor:pointer;transition:all var(--t);white-space:nowrap;display:flex;align-items:center;gap:8px}
-.btn-analyze:hover{transform:translateY(-1px);box-shadow:0 4px 24px var(--pglow)}
-.btn-analyze:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
-.results{padding:0 24px 40px;display:none}
-.results.show{display:block}
-.score-area{max-width:500px;margin:0 auto 24px;display:flex;align-items:center;gap:24px;padding:24px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--gborder)}
-.score-ring{width:130px;height:130px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative}
-.score-ring::before{content:'';position:absolute;inset:7px;border-radius:50%;background:var(--bg2)}
-.score-num{position:relative;z-index:1;font-size:32px;font-weight:800}
-.score-label{position:relative;z-index:1;font-size:11px;color:var(--text2);margin-top:-2px}
-.score-info{flex:1}
-.score-grade{font-size:18px;font-weight:700;margin-bottom:4px}
-.score-detail{font-size:13px;color:var(--text2);line-height:1.5}
-.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:20px}
-.summary-card{padding:14px 10px;text-align:center;background:var(--surface);border-radius:var(--rs);border:1px solid var(--gborder);transition:all var(--t)}
-.summary-card:hover{border-color:var(--shover)}
-.summary-card .sc-num{font-size:20px;font-weight:700}
-.summary-card .sc-label{font-size:11px;color:var(--text2);margin-top:3px}
-.tab-bar{display:flex;gap:4px;overflow-x:auto;padding:4px;background:var(--surface);border-radius:var(--rs);margin-bottom:16px;scrollbar-width:none}
-.tab-bar::-webkit-scrollbar{display:none}
-.tab-btn{padding:9px 16px;border:none;border-radius:7px;background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap;transition:all var(--t);flex-shrink:0}
-.tab-btn:hover{color:var(--text);background:var(--shover)}
-.tab-btn.active{background:var(--primary);color:#fff}
-.tab-body{display:none}
-.tab-body.show{display:block}
-.checks{display:flex;flex-direction:column;gap:6px}
-.check{padding:12px 14px;background:var(--surface);border-radius:var(--rs);border:1px solid var(--gborder);display:flex;align-items:flex-start;gap:10px;transition:all var(--t)}
-.check:hover{border-color:var(--shover)}
-.check-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.btn-primary{padding:12px 24px;background:linear-gradient(135deg,var(--primary),#a29bfe);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;transition:all var(--t);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 24px var(--pglow)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-secondary{padding:8px 16px;background:var(--surface);color:var(--text);border:1px solid var(--gborder);border-radius:var(--rs);font-size:13px;cursor:pointer;transition:all var(--t)}
+.btn-secondary:hover{background:var(--shover)}
+.content{max-width:900px;margin:0 auto;padding:0 24px 40px;display:none}
+.content.show{display:block}
+.results-section{background:var(--surface);border:1px solid var(--gborder);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.video-hero{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.video-hero img{width:200px;border-radius:var(--rs);flex-shrink:0}
+.video-hero-info{flex:1;min-width:200px}
+.video-hero-info h2{font-size:20px;font-weight:700;margin-bottom:4px;line-height:1.3}
+.video-hero-info .meta{font-size:13px;color:var(--text2);display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.meta-item{display:flex;align-items:center;gap:4px}
+.score-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:14px;font-weight:700}
+.score-badge.good{background:rgba(0,184,148,0.15);color:var(--success);border:1px solid rgba(0,184,148,0.3)}
+.score-badge.ok{background:rgba(253,203,110,0.15);color:var(--warn);border:1px solid rgba(253,203,110,0.3)}
+.score-badge.bad{background:rgba(255,107,107,0.15);color:var(--danger);border:1px solid rgba(255,107,107,0.3)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:640px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.stat-card{padding:16px;background:var(--bg2);border-radius:var(--rs);border:1px solid var(--gborder)}
+.stat-card .num{font-size:22px;font-weight:700}
+.stat-card .lbl{font-size:12px;color:var(--text2);margin-top:2px}
+.checks{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.check{padding:10px 12px;background:var(--bg2);border-radius:var(--rs);border:1px solid var(--gborder);display:flex;align-items:flex-start;gap:10px}
+.check-icon{font-size:14px;flex-shrink:0;margin-top:1px}
 .check-body{flex:1;min-width:0}
-.check-title{font-size:13px;font-weight:600;margin-bottom:2px}
-.check-detail{font-size:12px;color:var(--text2);line-height:1.4}
-.check-action{font-size:11px;color:var(--primary);margin-top:4px;display:inline-block;cursor:default}
-.pass{color:var(--success)}
-.fail{color:var(--danger)}
-.warn{color:var(--warn)}
-.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+.check-title{font-size:13px;font-weight:600;margin-bottom:1px}
+.check-detail{font-size:12px;color:var(--text2)}
+.check-action{font-size:11px;color:var(--primary);margin-top:3px;display:block}
+.pass{color:var(--success)}.fail{color:var(--danger)}.warn{color:var(--warn)}
+.editor-form{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:13px;font-weight:600;color:var(--text2)}
+.form-group textarea,.form-group input{padding:10px 12px;background:var(--bg2);border:1px solid var(--gborder);border-radius:var(--rs);color:var(--text);font-size:13px;outline:none;transition:all var(--t);font-family:inherit}
+.form-group textarea:focus,.form-group input:focus{border-color:var(--primary)}
+.form-group textarea{resize:vertical;min-height:60px}
+.tags-input{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;background:var(--bg2);border:1px solid var(--gborder);border-radius:var(--rs);min-height:42px}
+.tag{padding:3px 10px;background:var(--primary);color:#fff;border-radius:5px;font-size:12px;display:flex;align-items:center;gap:4px}
+.tag button{background:none;border:none;color:#fff;cursor:pointer;font-size:14px;padding:0;line-height:1}
+.tag-input-inner{flex:1;min-width:100px;border:none;background:transparent;color:var(--text);font-size:13px;outline:none}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .toast-container{position:fixed;top:76px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
 .toast{padding:10px 16px;border-radius:var(--rs);background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--gborder);color:var(--text);font-size:13px;animation:ti .3s ease,to .3s ease 2.7s forwards;box-shadow:0 8px 32px rgba(0,0,0,0.3);max-width:340px}
 @keyframes ti{from{opacity:0;transform:translateX(40px)}to{opacity:1}}
 @keyframes to{from{opacity:1}to{opacity:0;transform:translateX(40px)}}
-.empty{padding:40px;text-align:center;color:var(--text2);font-size:14px}
-.url-badge{padding:3px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--gborder);font-size:12px;color:var(--text2);display:inline-flex;align-items:center;gap:4px;margin-top:6px;word-break:break-all}
-.url-badge a{color:var(--primary);text-decoration:none}
-.url-badge a:hover{text-decoration:underline}
+.tab-bar{display:flex;gap:4px;overflow-x:auto;padding:4px;background:var(--surface);border-radius:var(--rs);margin-bottom:16px;scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-btn{padding:8px 14px;border:none;border-radius:7px;background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap;transition:all var(--t);flex-shrink:0}
+.tab-btn:hover{color:var(--text);background:var(--shover)}
+.tab-btn.active{background:var(--primary);color:#fff}
+.tab-body{display:none}
+.tab-body.show{display:block}
+.highlight{color:var(--accent)}
 @media(max-width:640px){
   .header{padding:12px 16px}
   .h-title{font-size:15px}
-  .hero{padding:24px 16px 16px}
+  .hero{padding:24px 16px 12px}
   .hero h1{font-size:22px}
-  .input-section{padding:0 16px 20px;flex-direction:column}
+  .input-section{padding:0 16px 16px;flex-direction:column}
   .input-field{min-width:100%}
-  .results{padding:0 16px 30px}
-  .score-area{flex-direction:column;text-align:center;padding:16px}
-  .score-ring{width:100px;height:100px}
-  .score-num{font-size:26px}
-  .score-ring::before{inset:5px}
-  .tab-btn{padding:7px 12px;font-size:11px}
-  .check{padding:10px 12px}
+  .content{padding:0 16px 30px}
+  .video-hero{flex-direction:column}
+  .video-hero img{width:100%}
+  .results-section{padding:14px}
 }
 </style>
 </head>
 <body>
 <div class="app">
   <header class="header">
-    <div class="h-left"><div class="h-logo">🔍</div><span class="h-title">SEO Analyzer</span></div>
+    <div class="h-left"><div class="h-logo">▶</div><span class="h-title">YouTube SEO</span></div>
     <div class="h-actions">
       <button class="btn-icon" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">🌙</button>
     </div>
   </header>
 
   <div class="hero">
-    <h1>Complete SEO Analysis</h1>
-    <p>Analyze meta tags, headings, images, links, content, technical, schema, security, accessibility, social &amp; performance</p>
-    <div class="badge">🔒 100% client-side · No data stored</div>
+    <h1>YouTube SEO Analyzer</h1>
+    <p>Analyze & optimize your YouTube video for search</p>
   </div>
 
   <div class="input-section">
-    <input class="input-field" id="urlInput" type="url" placeholder="https://example.com" autocomplete="off" spellcheck="false">
-    <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">🔍 Analyze</button>
+    <input class="input-field" id="urlInput" type="url" placeholder="https://youtu.be/VIDEO_ID or https://youtube.com/watch?v=..." autocomplete="off">
+    <button class="btn-primary" id="analyzeBtn" onclick="analyze()">🔍 Analyze</button>
   </div>
 
-  <div class="results" id="results">
-    <div class="score-area" id="scoreArea"></div>
-    <div class="summary-grid" id="summaryGrid"></div>
-    <div class="tab-bar" id="tabBar"></div>
-    <div id="tabContainer"></div>
+  <div class="content" id="content">
+    <div id="mainResults"></div>
   </div>
 </div>
-<div class="toast-container" id="toastContainer"></div>
+<div class="toast-container" id="toast"></div>
+
 <script>
-// =============== STATE ===============
-const S = { theme:'dark', results:null, html:'', url:'' };
-const PROXIES = [
-  u=>`https://proxy.cors.sh/${u}`,
-  u=>u
-];
-const STOP = new Set('a an and or but in on at to for of by with from is are was were be been being have has had do does did will would can could may might shall should this that these those it its not no nor so as if then than too very just also about into over after before between under above below up down out off through during without all each every both few more most other some such only own same here there when where why how what which who whom'.split(' '));
+const S={theme:'dark',oembed:null,videoId:null};
 
-// =============== UTILS ===============
-function q(s,p){let e=document.createElement('div');e.innerHTML=p;return e.querySelector(s)}
-function qa(s,p){let e=document.createElement('div');e.innerHTML=p;return[...e.querySelectorAll(s)]}
-function text(p){let e=document.createElement('div');e.innerHTML=p;return(e.body||e).textContent.replace(/\s+/g,' ').trim()}
 function $(id){return document.getElementById(id)}
-
-function toast(m){let c=$('toastContainer'),t=document.createElement('div');t.className='toast';t.textContent=m;c.appendChild(t);setTimeout(()=>t.remove(),3000)}
+function toast(m){let c=$('toast'),t=document.createElement('div');t.className='toast';t.textContent=m;c.appendChild(t);setTimeout(()=>t.remove(),3000)}
 function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',S.theme==='dark'?'':'light');$('themeBtn').textContent=S.theme==='dark'?'🌙':'☀️'}
-function fmt(s){if(!s||isNaN(s))return'0:00';let m=Math.floor(s/60);return m+':'+String(Math.floor(s%60)).padStart(2,'0')}
-function safeUrl(u){if(!u)return'';try{return new URL(u).hostname}catch(e){return u}}
-function strip(u){return u.replace(/[?#].*/,'')}
 
-// =============== FETCH ===============
-async function fetchPage(url){
-  for(let i=0;i<PROXIES.length;i++){
-    try{
-      let r=await fetch(PROXIES[i](url),{signal:AbortSignal.timeout(15000)});
-      if(!r.ok)continue;
-      let t=await r.text();
-      if(t.length>100)return{html:t,headers:r.headers,proxy:i};
-    }catch(e){continue}
-  }
-  throw new Error('Failed to fetch page. All proxies unavailable.');
+function extractId(url){
+  if(!url)return null;
+  let u=url.trim();
+  let m=u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|music\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+  if(m)return m[1];
+  m=u.match(/^([a-zA-Z0-9_-]{11})$/);
+  return m?m[1]:null;
 }
 
-async function fetchSimple(url){
+async function fetchOembed(videoId){
   try{
+    let url=`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
     let r=await fetch(url,{signal:AbortSignal.timeout(8000)});
-    return{ok:r.ok,status:r.status};
-  }catch(e){return{ok:false,status:'error'}}
-}
-
-async function fetchProxyUrl(url){
-  try{
-    let r=await fetch(PROXIES[0](url),{signal:AbortSignal.timeout(10000)});
-    if(r.ok){let t=await r.text();return{ok:true,status:r.status,text:t}}
-    return{ok:false,status:r.status,text:''};
+    if(!r.ok)throw new Error('oEmbed failed');
+    return await r.json();
   }catch(e){
     try{
-      let r=await fetch(url,{signal:AbortSignal.timeout(5000)});
-      return{ok:r.ok,status:r.status,text:r.ok?await r.text():''};
-    }catch(e2){return{ok:false,status:'error',text:''}}
-  }
-}
-
-// =============== ANALYZERS ===============
-
-function analyzeMeta(html,url){
-  let r=[];
-  let t=q('title',html);let title=t?t.textContent.trim():'';
-  if(!title)r.push({i:'❌',t:'Missing Title Tag',d:'Title tag is the most important meta element.',a:'Add a descriptive <title> (50-60 characters).'});
-  else if(title.length<30)r.push({i:'⚠️',t:`Title too short (${title.length} chars)`,d:`Current: "${title.substring(0,50)}"`,a:'Recommended: 50-60 characters for optimal SERP display.'});
-  else if(title.length>70)r.push({i:'⚠️',t:`Title too long (${title.length} chars)`,d:`"${title.substring(0,50)}..."`,a:'Keep titles under 60 characters to avoid truncation.'});
-  else r.push({i:'✅',t:`Title (${title.length} chars)`,d:`"${title.substring(0,55)}${title.length>55?'...':''}"`,a:'Good length!'});
-
-  let md=q('meta[name="description"]',html);let mdc=md?md.getAttribute('content').trim():'';
-  if(!mdc)r.push({i:'❌',t:'Missing Meta Description',d:'Meta descriptions impact click-through rates.',a:'Add a compelling meta description (150-160 characters).'});
-  else if(mdc.length<100)r.push({i:'⚠️',t:`Meta description too short (${mdc.length} chars)`,d:mdc.substring(0,80)+'...',a:'Recommended: 150-160 characters.'});
-  else if(mdc.length>170)r.push({i:'⚠️',t:`Meta description too long (${mdc.length} chars)`,d:mdc.substring(0,80)+'...',a:'Trim to 150-160 characters to avoid truncation.'});
-  else r.push({i:'✅',t:`Meta description (${mdc.length} chars)`,d:mdc.substring(0,80)+'...',a:'Optimal length.'});
-
-  // keyword in title
-  if(title&&mdc){
-    let kw=title.toLowerCase().split(/\s+/).filter(w=>w.length>2&&!STOP.has(w))[0];
-    if(kw&&!mdc.toLowerCase().includes(kw))r.push({i:'⚠️',t:'Keyword mismatch',d:`"${kw}" found in title but not in description.`,a:'Include primary keyword in meta description.'});
-  }
-
-  // OG
-  let og={t:q('meta[property="og:title"]',html),d:q('meta[property="og:description"]',html),i:q('meta[property="og:image"]',html),u:q('meta[property="og:url"]',html)};
-  r.push({i:og.t?'✅':'❌',t:'OG Title',d:og.t?'Found':'Missing',a:og.t?'Present':'Add <meta property="og:title">'});
-  r.push({i:og.d?'✅':'❌',t:'OG Description',d:og.d?'Found':'Missing',a:og.d?'Present':'Add <meta property="og:description">'});
-  r.push({i:og.i?'✅':'❌',t:'OG Image',d:og.i?og.i.getAttribute('content').substring(0,50)+'...':'Missing',a:og.i?'Present':'Add <meta property="og:image"> for social sharing'});
-  r.push({i:og.u?'✅':'❌',t:'OG URL',d:og.u?og.u.getAttribute('content'):'Missing',a:og.u?'Present':'Add <meta property="og:url">'});
-  let ogAll=[og.t,og.d,og.i,og.u].filter(Boolean).length;
-  if(ogAll===4)r.push({i:'✅',t:'All OG Tags Present',d:'Title, description, image, url all set.',a:'Great social sharing setup!'});
-  else r.push({i:'⚠️',t:`OG Tags: ${ogAll}/4`,d:['title','description','image','url'].filter((_,j)=>![og.t,og.d,og.i,og.u][j]).join(', ')+' missing',a:'Complete all 4 OG tags for optimal social sharing.'});
-
-  // Twitter
-  let tc=q('meta[name="twitter:card"]',html);let ts=q('meta[name="twitter:site"]',html);
-  r.push({i:tc?'✅':'⚠️',t:'Twitter Card',d:tc?`${tc.getAttribute('content')}`:'Missing',a:tc?'Present':'Add <meta name="twitter:card">'});
-  if(tc){
-    let tt=q('meta[name="twitter:title"]',html);let td=q('meta[name="twitter:description"]',html);
-    if(!tt)r.push({i:'⚠️',t:'Twitter Title',d:'Missing twitter:title meta tag.',a:'Add <meta name="twitter:title"> for better Twitter cards.'});
-    if(!td)r.push({i:'⚠️',t:'Twitter Description',d:'Missing twitter:description.',a:'Add <meta name="twitter:description">.'});
-  }
-
-  // favicon
-  let fv=q('link[rel="icon"]',html)||q('link[rel="shortcut icon"]',html)||q('link[rel="apple-touch-icon"]',html);
-  r.push({i:fv?'✅':'⚠️',t:'Favicon',d:fv?fv.getAttribute('href')||fv.getAttribute('content')||'Found':'Not found',a:fv?'Present':'Add a favicon for branding in browser tabs.'});
-
-  return r;
-}
-
-function analyzeHeadings(html){
-  let r=[],doc=document.createElement('div');doc.innerHTML=html;
-  for(let l=1;l<=6;l++){
-    let tg=doc.querySelectorAll(`h${l}`),c=tg.length;
-    let txt=Array.from(tg).map(t=>t.textContent.trim().substring(0,50)).filter(Boolean);
-    if(l===1){
-      if(c===0)r.push({i:'❌',t:'Missing H1 Tag',d:'Every page needs exactly one H1.',a:'Add a single descriptive <h1> tag.'});
-      else if(c>1)r.push({i:'⚠️',t:`Multiple H1 Tags (${c})`,d:txt.map(t=>`"${t}"`).join(', ').substring(0,80),a:'Use only one H1 per page.'});
-      else if(txt[0]&&txt[0].length>4)r.push({i:'✅',t:'H1 Tag',d:`"${txt[0].substring(0,60)}"`,a:'Good!'});
-      else if(txt[0])r.push({i:'⚠️',t:'H1 Too Short',d:`"${txt[0]}"`,a:'Make H1 descriptive (5+ words recommended).'});
-    } else {
-      if(c>0)r.push({i:'✅',t:`H${l} Tags (${c})`,d:txt.slice(0,2).join(' | ')+(txt.length>2?` +${txt.length-2} more`:''),a:'Good heading structure.'});
+      let url=`https://www.youtube.com/oembed?url=https://youtu.be/${videoId}&format=json`;
+      let r=await fetch(url,{signal:AbortSignal.timeout(8000)});
+      if(!r.ok)throw new Error('oEmbed failed');
+      return await r.json();
+    }catch(e2){
+      throw new Error('Could not fetch video data. Check the URL.');
     }
   }
-  // heading hierarchy check
-  let allH=[];
-  for(let l=1;l<=6;l++){let tg=doc.querySelectorAll(`h${l}`);tg.forEach(h=>allH.push({lvl:l,txt:h.textContent.trim()}))}
-  if(allH.length>1){
-    let last=0,skip=false;
-    for(let h of allH){
-      if(h.lvl-last>1&&last>0){skip=true;break}
-      last=h.lvl;
-    }
-    if(skip)r.push({i:'⚠️',t:'Heading Hierarchy Skip',d:'Headings skip levels (e.g. H1→H3).',a:'Maintain proper hierarchy: H1→H2→H3, avoid skipping levels.'});
-    else r.push({i:'✅',t:'Heading Hierarchy',d:'Headings follow proper hierarchical order.',a:'Good!'});
-  }
-  return r;
 }
 
-function analyzeImages(html){
-  let r=[],doc=document.createElement('div');doc.innerHTML=html;
-  let imgs=doc.querySelectorAll('img'),total=imgs.length,alt=0,missing=0,empty=0,broken=0;
-  imgs.forEach(img=>{
-    if(img.hasAttribute('alt')){let a=img.getAttribute('alt').trim();a?alt++:empty++}
-    else missing++;
-    if(!img.getAttribute('src')||img.getAttribute('src').trim()==='')broken++;
-  });
-  r.push({i:'✅',t:`Total Images: ${total}`,d:`${alt} with alt · ${empty} empty alt · ${missing} missing`,a:''});
-  if(missing>0)r.push({i:'❌',t:`Missing Alt Text: ${missing}`,d:'Alt attributes improve accessibility and SEO.',a:'Add descriptive alt text to all informative images.'});
-  if(empty>0)r.push({i:'⚠️',t:`Empty Alt: ${empty}`,d:'alt="" is OK for decorative images only.',a:'Ensure decorative images use alt="", content images need descriptive alt.'});
-  if(alt>0&&missing===0&&empty===0)r.push({i:'✅',t:'All Images Have Alt',d:`${alt} images with proper alt text.`,a:'Excellent!'});
-  if(broken>0)r.push({i:'❌',t:`Broken Image Sources: ${broken}`,d:'Images with empty src attribute.',a:'Fix image src attributes.'});
-  return r;
-}
-
-function analyzeLinks(html,baseUrl){
-  let r=[],doc=document.createElement('div');doc.innerHTML=html;
-  let links=doc.querySelectorAll('a[href]'),total=links.length;
-  let int=0,ext=0,nf=0,emptyTxt=0,hasTxt=0;
-  links.forEach(a=>{
-    let h=a.getAttribute('href').trim();
-    if(!h||h==='#'||h.startsWith('javascript:'))return;
-    if(a.getAttribute('rel')&&a.getAttribute('rel').includes('nofollow'))nf++;
-    let t=a.textContent.trim();
-    t?hasTxt++:emptyTxt++;
+async function checkThumbnail(videoId){
+  for(let qual of ['maxresdefault','sddefault','hqdefault']){
     try{
-      let base=new URL(baseUrl),lu=new URL(h,baseUrl);
-      lu.hostname===base.hostname?int++:ext++;
-    }catch(e){int++}
-  });
-  r.push({i:'✅',t:`Total Links: ${total}`,d:`${int} internal · ${ext} external · ${nf} nofollow`,a:''});
-  if(total===0)r.push({i:'❌',t:'No Links Found',d:'Internal links help search engines discover content.',a:'Add relevant internal links to your content.'});
-  if(ext===0&&int>0)r.push({i:'⚠️',t:'No External Links',d:'External links to authoritative sources add credibility.',a:'Consider adding relevant outbound links.'});
-  if(nf>0)r.push({i:'⚠️',t:`Nofollow Links: ${nf}`,d:`${nf} of ${total} links use rel="nofollow".`,a:'Use nofollow only for sponsored or user-generated content.'});
-  if(emptyTxt>0)r.push({i:'⚠️',t:`Empty Anchor Text: ${emptyTxt}`,d:'Links with no text content (e.g., image-only links without alt).',a:'Ensure all links have descriptive anchor text.'});
-  return r;
-}
-
-function analyzeContent(html){
-  let r=[],doc=document.createElement('div');doc.innerHTML=html;
-  let t=(doc.body||doc).textContent.replace(/\s+/g,' ').trim();
-  let words=t.split(/\s+/).filter(w=>w.length>0),wc=words.length;
-  let rt=Math.max(1,Math.round(wc/200));
-  let sentences=t.split(/[.!?]+/).filter(s=>s.trim().length>0).length;
-  let paragraphs=(doc.body||doc).querySelectorAll('p').length;
-
-  if(wc<100)r.push({i:'❌',t:`Word Count: ${wc.toLocaleString()}`,d:'Very thin content. Aim for 300+ words.',a:'Expand your content with relevant information.'});
-  else if(wc<300)r.push({i:'⚠️',t:`Word Count: ${wc.toLocaleString()}`,d:`~${rt} min read. Aim for 300+ words.`,a:'Add more substantial content to improve SEO.'});
-  else if(wc<1000)r.push({i:'✅',t:`Word Count: ${wc.toLocaleString()}`,d:`~${rt} min read.`,a:'Good content length. Consider expanding to 1000+ for in-depth topics.'});
-  else r.push({i:'✅',t:`Word Count: ${wc.toLocaleString()}`,d:`~${rt} min read · ${sentences} sentences · ${paragraphs} paragraphs`,a:'Excellent content depth!'});
-
-  let htmlLen=html.length;
-  let ratio=htmlLen>0?(t.length/htmlLen*100).toFixed(1):0;
-  if(ratio<5)r.push({i:'⚠️',t:`Content Ratio: ${ratio}%`,d:'Low content-to-HTML ratio.`,a:'Reduce unnecessary HTML markup.'});
-  else if(ratio<10)r.push({i:'⚠️',t:`Content Ratio: ${ratio}%`,d:`${t.length.toLocaleString()} text / ${htmlLen.toLocaleString()} total`,a:'Aim for 10%+ content ratio.'});
-  else r.push({i:'✅',t:`Content Ratio: ${ratio}%`,d:`${t.length.toLocaleString()} text / ${htmlLen.toLocaleString()} total`,a:'Good ratio.'});
-
-  // Keyword density
-  if(wc>10){
-    let freq={};
-    words.forEach(w=>{w=w.toLowerCase().replace(/[^a-z0-9]/g,'');if(w.length>2&&!STOP.has(w))freq[w]=(freq[w]||0)+1});
-    let sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,5);
-    if(sorted.length){
-      let kw=sorted.map(([w,c])=>`${w} (${(c/wc*100).toFixed(1)}%)`).join(' · ');
-      r.push({i:'✅',t:'Top Keywords',d:kw.substring(0,120),a:'Ensure primary keywords appear in headings and title.'});
-      // Check keyword stuffing
-      let topPct=sorted[0][1]/wc*100;
-      if(topPct>5)r.push({i:'⚠️',t:'Possible Keyword Stuffing',d:`"${sorted[0][0]}" used ${sorted[0][1]} times (${topPct.toFixed(1)}%).`,a:'Keep keyword density under 5%. Use synonyms and variations.'});
-    }
-  }
-
-  // Check for lorem ipsum
-  if(t.toLowerCase().includes('lorem ipsum'))r.push({i:'❌',t:'Placeholder Content Detected',d:'Page contains "lorem ipsum" placeholder text.',a:'Replace all placeholder content with real, valuable content.'});
-
-  return r;
-}
-
-function analyzeTechnical(html,url){
-  let r=[];
-  let doc=document.createElement('div');doc.innerHTML=html;
-
-  // SSL
-  r.push({i:url.startsWith('https')?'✅':'❌',t:'SSL / HTTPS',d:url.startsWith('https')?'Active (secure)':'Not using HTTPS',a:url.startsWith('https')?'Secure connection.':'Install an SSL certificate immediately.'});
-
-  // Viewport
-  let vp=q('meta[name="viewport"]',html);
-  r.push({i:vp?'✅':'❌',t:'Viewport Meta',d:vp?vp.getAttribute('content'):'Missing',a:vp?'Present':'Add <meta name="viewport"> for mobile responsiveness.'});
-
-  // Charset
-  let cs=q('meta[charset]',html)||q('meta[http-equiv="Content-Type"]',html);
-  r.push({i:cs?'✅':'❌',t:'Character Encoding',d:cs?(cs.getAttribute('charset')||'UTF-8'):'Not specified',a:cs?'Present':'Add <meta charset="UTF-8">.'});
-
-  // Language
-  let langEl=doc.querySelector('html');
-  let lang=langEl?langEl.getAttribute('lang'):null;
-  if(!lang)lang=html.match(/<html[^>]*lang=["']([^"']+)/i);
-  r.push({i:lang?'✅':'❌',t:'Language Attribute',d:lang?(typeof lang==='string'?lang:lang[1]):'Missing',a:lang?'Present':'Add lang attribute to <html>.'});
-
-  // Canonical
-  let can=q('link[rel="canonical"]',html);
-  r.push({i:can?'✅':'⚠️',t:'Canonical Tag',d:can?can.getAttribute('href').substring(0,60)+'...':'Not found',a:can?'Present':'Add canonical URL to prevent duplicate content issues.'});
-
-  // Robots meta
-  let robots=q('meta[name="robots"]',html);
-  if(robots){
-    let cont=robots.getAttribute('content');
-    if(cont.includes('noindex'))r.push({i:'⚠️',t:'Robots: Noindex',d:'This page is set to noindex.',a:'Be cautious — this page won\'t appear in search results.'});
-    if(cont.includes('nofollow'))r.push({i:'⚠️',t:'Robots: Nofollow',d:'Links on this page are set to nofollow.',a:'Ensure this is intentional.'});
-    r.push({i:'✅',t:'Meta Robots',d:`content="${cont}"`,a:'Custom robots directive set.'});
-  }
-
-  // Async: robots.txt, sitemap.xml
-  setTimeout(async ()=>{
-    try{
-      let u=new URL('/robots.txt',url);
-      let rs=await fetchProxyUrl(u.href);
-      if(rs.ok&&rs.text.length>0)addC('technical',{i:'✅',t:'Robots.txt',d:`Found (${rs.text.length} bytes)`,a:'Properly configured.'});
-      else addC('technical',{i:'⚠️',t:'Robots.txt',d:rs.status==='error'?'Could not fetch':'Not found or empty',a:'Add robots.txt to guide crawlers.'});
-    }catch(e){addC('technical',{i:'⚠️',t:'Robots.txt',d:'Error checking',a:'Add robots.txt to guide crawlers.'})}
-    try{
-      let u=new URL('/sitemap.xml',url);
-      let sm=await fetchProxyUrl(u.href);
-      if(sm.ok&&sm.text.length>0)addC('technical',{i:'✅',t:'Sitemap.xml',d:`Found (${sm.text.length} bytes)`,a:'Properly configured.'});
-      else addC('technical',{i:'⚠️',t:'Sitemap.xml',d:'Not found at /sitemap.xml',a:'Add an XML sitemap for better indexing.'});
-    }catch(e){addC('technical',{i:'⚠️',t:'Sitemap.xml',d:'Error checking',a:'Add an XML sitemap.'})}
-    // Check sitemap from robots.txt
-    try{
-      let u=new URL('/robots.txt',url);
-      let rs=await fetchProxyUrl(u.href);
-      if(rs.ok&&rs.text.includes('Sitemap')){
-        let smLine=rs.text.split('\n').find(l=>l.toLowerCase().startsWith('sitemap'));
-        if(smLine)addC('technical',{i:'✅',t:'Sitemap in Robots.txt',d:`Found: ${smLine.substring(0,50)}...`,a:'Good practice!'});
-      }
+      let r=await fetch(`https://i.ytimg.com/vi/${videoId}/${qual}.jpg`,{method:'HEAD',signal:AbortSignal.timeout(3000)});
+      if(r.ok)return qual;
     }catch(e){}
-    renderTabContent();
-  },100);
-
-  return r;
-}
-
-function analyzeSchema(html){
-  let r=[],doc=document.createElement('div');doc.innerHTML=html;
-  let scripts=doc.querySelectorAll('script[type="application/ld+json"]');
-  if(!scripts.length)r.push({i:'⚠️',t:'No Structured Data',d:'No JSON-LD schema found.',a:'Add structured data (JSON-LD) to enable rich snippets.'});
-  else{
-    r.push({i:'✅',t:`Schema Blocks: ${scripts.length}`,d:'',a:'Good — structured data present.'});
-    scripts.forEach((s,idx)=>{
-      try{
-        let d=JSON.parse(s.textContent);
-        let types=[];
-        if(Array.isArray(d))d.forEach(x=>{if(x['@type'])types.push(x['@type'])});
-        else if(d['@type']){types.push(d['@type']);if(d['@graph'])d['@graph'].forEach(g=>{if(g['@type']&&!types.includes(g['@type']))types.push(g['@type']})}
-        if(types.length)r.push({i:'✅',t:`Schema #${idx+1}: ${types.join(', ')}`,d:types.join(', '),a:'Valid JSON-LD schema.'});
-        else r.push({i:'⚠️',t:`Schema #${idx+1}: Unknown Type`,d:'No @type detected.',a:'Ensure schema has a valid @type property.'});
-      }catch(e){
-        r.push({i:'❌',t:`Schema #${idx+1}: Invalid JSON`,d:'Malformed JSON-LD.',a:'Fix JSON syntax in your structured data.'});
-      }
-    });
   }
-  return r;
+  return null;
 }
 
-function analyzeSecurity(html,url){
+// =============== ANALYSIS ===============
+
+function analyzeTitle(title,manualTitle){
+  let t=(manualTitle||title||'').trim();
   let r=[];
-  let doc=document.createElement('div');doc.innerHTML=html;
+  if(!t){r.push({i:'❌',t:'Title is empty',d:'Title is the most important YouTube SEO factor.',a:'Add a compelling title (40-60 characters recommended).'});return r;}
 
-  // HTTPS redirect check
-  r.push({i:url.startsWith('https')?'✅':'❌',t:'HTTPS',d:url.startsWith('https')?'Using HTTPS':'Using HTTP',a:url.startsWith('https')?'Secure.':'Redirect HTTP to HTTPS.'});
+  let len=t.length;
+  if(len<30)r.push({i:'❌',t:`Title too short (${len} chars)`,d:len<10?'Very short title.':'Aim for 40-60 characters.',a:'Make your title more descriptive (include target keyword).'});
+  else if(len<40)r.push({i:'⚠️',t:`Title a bit short (${len} chars)`,d:'Optimal: 40-60 characters.',a:'Consider adding more context while keeping it scannable.'});
+  else if(len<70)r.push({i:'✅',t:`Good title length (${len} chars)`,d:'Within optimal range.',a:'Well optimized!'});
+  else r.push({i:'⚠️',t:`Title long (${len} chars)`,d:'YouTube truncates long titles in search.',a:'Keep under 70 characters for full display.'});
 
-  // CSP
-  let csp=null;
-  let metaCSP=q('meta[http-equiv="Content-Security-Policy"]',html);
-  if(metaCSP)csp=metaCSP.getAttribute('content');
-  r.push({i:csp?'✅':'⚠️',t:'Content Security Policy',d:csp?csp.substring(0,50)+'...':'Not set',a:csp?'Present':'Add CSP headers to prevent XSS attacks.'});
+  // Keyword placement
+  let firstWords=t.split(/\s+/).slice(0,3).join(' ');
+  if(firstWords.length>5)r.push({i:'✅',t:'Keyword in first 3 words',d:`"${firstWords.substring(0,30)}..."`,a:'Great — important keywords are front-loaded.'});
+  else r.push({i:'⚠️',t:'Front-load keywords',d:'Put most important words first in title.',a:'YouTube and Google prioritize the beginning of titles.'});
 
-  // X-Frame-Options via meta
-  let xfo=q('meta[http-equiv="X-Frame-Options"]',html);
-  r.push({i:xfo?'✅':'⚠️',t:'X-Frame-Options',d:xfo?xfo.getAttribute('content'):'Not set via meta tag',a:xfo?'Present':'Add X-Frame-Options to prevent clickjacking.'});
+  // Pipe/bracket separator
+  if(t.includes('|')||t.includes('- ')||t.includes('– '))r.push({i:'✅',t:'Clean separator',d:'Using pipes or dashes to organize title.',a:'Good for readability.'});
 
-  // Content-Type meta
-  let ct=q('meta[http-equiv="Content-Type"]',html);
-  if(ct)r.push({i:'✅',t:'Content-Type Meta',d:ct.getAttribute('content'),a:'Good.'});
-
-  // Form input sanitization check (basic)
-  let forms=doc.querySelectorAll('input[type="text"],input[type="search"],textarea');
-  if(forms.length>0)r.push({i:'⚠️',t:`Form Inputs: ${forms.length}`,d:'Ensure all form inputs are properly validated server-side.',a:'Client-side validation alone is not sufficient for security.'});
-
-  return r;
-}
-
-function analyzeSocial(html){
-  let r=[];
-  let doc=document.createElement('div');doc.innerHTML=html;
-
-  // OG tags count
-  let ogCount=['title','description','image','url'].filter(p=>q(`meta[property="og:${p}"]`,html)).length;
-  r.push({i:ogCount===4?'✅':'⚠️',t:`OG Tags: ${ogCount}/4`,d:ogCount===4?'All OG tags present':`Missing ${4-ogCount} OG tag(s)`,a:ogCount===4?'Excellent for social sharing.':'Complete all OG tags for Facebook/LinkedIn sharing.'});
-
-  // Twitter card
-  let tc=q('meta[name="twitter:card"]',html);
-  r.push({i:tc?'✅':'⚠️',t:'Twitter Card',d:tc?`card="${tc.getAttribute('content')}"`:'Not set',a:tc?'Present':'Set twitter:card for Twitter sharing.'});
-
-  // Social preview description
-  let desc=q('meta[property="og:description"]',html)||q('meta[name="description"]',html);
-  if(desc){
-    let d=desc.getAttribute('content');
-    if(d&&d.length<50)r.push({i:'⚠️',t:'Social Description Too Short',d:`${d.length} chars. Aim for 100+.`,a:'Write a more compelling social description.'});
-  }
+  // All caps check
+  let upper=(t.match(/[A-Z]/g)||[]).length;
+  if(upper>t.length*0.5&&t.length>10)r.push({i:'⚠️',t:'Excessive capitalization',d:'Too many uppercase letters.',a:'Use normal capitalization. ALL CAPS can appear spammy.'});
 
   return r;
 }
 
-function analyzeMobile(html){
+function analyzeDescription(desc){
+  let d=(desc||'').trim();
   let r=[];
-  let doc=document.createElement('div');doc.innerHTML=html;
-  let vp=q('meta[name="viewport"]',html);
-  r.push({i:vp?'✅':'❌',t:'Viewport Meta',d:vp?'Configured':'Missing',a:vp?'Essential for mobile responsiveness.':'Add <meta name="viewport" content="width=device-width, initial-scale=1">'});
-  let fs=doc.querySelectorAll('*').length;
-  if(fs>500)r.push({i:'⚠️',t:`DOM Size: ${fs} elements`,d:'Large DOM tree can slow mobile rendering.',a:'Reduce DOM size by simplifying markup.'});
-function analyzePerformance(html,headers){
-  let r=[];
-  let doc=document.createElement('div');doc.innerHTML=html;
+  if(!d){r.push({i:'❌',t:'Description is empty',d:'Description helps YouTube understand your video.',a:'Write 200+ characters including target keywords.'});return r;}
 
-  let scripts=doc.querySelectorAll('script[src]');
-  let styles=doc.querySelectorAll('link[rel="stylesheet"]');
-  let imgs=doc.querySelectorAll('img[src]');
-  let htmlSize=html.length;
+  let len=d.length;
+  if(len<200)r.push({i:'❌',t:`Description very short (${len} chars)`,d:'Aim for at least 200 characters.',a:'Expand your description with relevant details and keywords.'});
+  else if(len<500)r.push({i:'⚠️',t:`Description short (${len} chars)`,d:'Optimal: 500-2000 characters.',a:'Add more context, keywords, and timestamps.'});
+  else if(len<2000)r.push({i:'✅',t:`Good description length (${len} chars)`,d:'Well within optimal range.',a:'Great!'});
+  else r.push({i:'✅',t:`Detailed description (${len} chars)`,d:'Very comprehensive.',a:'Excellent detail — keeps viewers engaged.'});
 
-  r.push({i:'✅',t:`HTML Size: ${(htmlSize/1024).toFixed(1)} KB`,d:'',a:htmlSize<51200?'Good page size.':'Consider reducing HTML size.'});
+  // Links
+  let links=(d.match(/https?:\/\/[^\s]+/g)||[]);
+  if(links.length>0)r.push({i:'✅',t:`Links: ${links.length}`,d:'Using links in description.',a:'Good for driving traffic. Ensure they open in new tabs.'});
+  else r.push({i:'⚠️',t:'No links in description',d:'Add links to social media, website, or related videos.',a:'Use the first 1-2 links for your most important pages.'});
 
-  let totalReq=scripts.length+styles.length+imgs.length;
-  r.push({i:totalReq<50?'✅':'⚠️',t:`Estimated Requests: ${totalReq}`,d:`${scripts.length} scripts · ${styles.length} stylesheets · ${imgs.length} images`,a:totalReq<50?'Reasonable number of requests.':'Reduce HTTP requests by bundling files.'});
+  // Hashtags
+  let hashtags=(d.match(/#[a-zA-Z0-9_]+/g)||[]);
+  if(hashtags.length>0)r.push({i:hashtags.length<=15?'✅':'⚠️',t:`Hashtags: ${hashtags.length}`,d:hashtags.length>15?'YouTube only shows first 15 hashtags.':`Using ${hashtags.length} hashtags.`,a:hashtags.length>15?'Reduce to 3-5 relevant hashtags.':'Good for discoverability. YouTube allows up to 15.'});
+  else r.push({i:'⚠️',t:'No hashtags',d:'Hashtags improve search discovery.',a:'Add 3-5 relevant hashtags in your description.'});
 
-  // Render-blocking scripts in head
-  let headScripts=doc.querySelectorAll('head script[src]');
-  if(headScripts.length>0)r.push({i:'⚠️',t:`Render-Blocking Scripts: ${headScripts.length}`,d:'Scripts in <head> block rendering.',a:'Move scripts to bottom of <body> or add defer/async attributes.'});
+  // Timestamps
+  let ts=d.match(/\d+:\d+/g);
+  if(ts&&ts.length>1)r.push({i:'✅',t:`Timestamps: ${ts.length}`,d:'Chapters help search indexing.',a:'Great for user experience and SEO.'});
+  else r.push({i:'⚠️',t:'No chapter timestamps',d:'Timestamps create video chapters in search.',a:'Add chapter markers (0:00, 1:30, etc.) to your description.'});
 
-  // Lazy loading
-  let lazyImgs=doc.querySelectorAll('img[loading="lazy"]');
-  if(imgs.length>0&&lazyImgs.length===0)r.push({i:'⚠️',t:'Images Without Lazy Loading',d:'No images use loading="lazy".',a:'Add loading="lazy" to below-the-fold images.'});
-  else if(imgs.length>0)r.push({i:'✅',t:`Lazy Loading: ${lazyImgs.length}/${imgs.length}`,d:'Some images use lazy loading.',a:'Good practice.'});
-
-  // Inline styles check
-  let inlineStyles=doc.querySelectorAll('[style]');
-  if(inlineStyles.length>5)r.push({i:'⚠️',t:`Inline Styles: ${inlineStyles.length}`,d:'Excessive inline styles increase HTML size.',a:'Move inline styles to external CSS.'});
+  // Keyword density (top words)
+  let words=d.toLowerCase().replace(/https?:\/\/[^\s]+/g,'').split(/\s+/).filter(w=>w.length>2&&!/^[#@]/.test(w));
+  let stop=new Set('the and for are was you all can has had not its but any how our out use may now see get who try her his its own did got set put say she too per via etc'.split(' '));
+  let freq={};
+  words.forEach(w=>{w=w.replace(/[^a-z0-9]/g,'');if(w.length>2&&!stop.has(w))freq[w]=(freq[w]||0)+1});
+  let top=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  if(top.length)r.push({i:'✅',t:'Top description keywords',d:top.map(([w,c])=>`"${w}" (${c}x)`).join(' · '),a:'Ensure primary keyword appears naturally in first 2 sentences.'});
 
   return r;
 }
 
-function analyzeAccessibility(html){
+function analyzeTags(tags){
+  let t=tags||[];
   let r=[];
-  let doc=document.createElement('div');doc.innerHTML=html;
+  let count=t.length;
+  if(count===0){r.push({i:'❌',t:'No tags',d:'Tags help YouTube understand your video.',a:'Add 5-15 relevant tags. YouTube uses tags for search.'});return r;}
 
-  // Alt text on images
-  let imgs=doc.querySelectorAll('img');
-  let missingAlt=0;
-  imgs.forEach(img=>{if(!img.getAttribute('alt')&&!img.getAttribute('alt')==='')missingAlt++});
-  if(missingAlt>0)r.push({i:'❌',t:`Images Missing Alt: ${missingAlt}`,d:'Screen readers cannot describe these images.',a:'Add alt text to all images for WCAG compliance.'});
+  if(count<5)r.push({i:'⚠️',t:`Few tags (${count})`,d:'Aim for 5-15 relevant tags.',a:'Expand your tag list with related terms and variations.'});
+  else if(count<=15)r.push({i:'✅',t:`Good tag count (${count})`,d:'Within optimal range.',a:'Well optimized!'});
+  else r.push({i:'⚠️',t:`Many tags (${count})`,d:'YouTube may ignore excess tags.',a:'Stick to 10-15 highly relevant tags.'});
 
-  // Heading structure
-  let h1=doc.querySelectorAll('h1');
-  if(!h1.length)r.push({i:'❌',t:'Missing H1',d:'H1 helps screen reader users navigate.',a:'Add exactly one H1.'});
-
-  // Language
-  let htmlEl=doc.querySelector('html');
-  if(htmlEl&&!htmlEl.getAttribute('lang'))r.push({i:'❌',t:'Missing Lang Attribute',d:'Screen readers rely on lang for pronunciation.',a:'Add lang attribute to <html>.'});
-
-  // Viewport
-  if(!q('meta[name="viewport"]',html))r.push({i:'❌',t:'Missing Viewport',d:'Mobile users cannot zoom/read properly.',a:'Add <meta name="viewport">.'});
-
-  // Form labels
-  let inputs=doc.querySelectorAll('input:not([type="hidden"]),textarea,select');
-  let unlabeled=0;
-  inputs.forEach(inp=>{
-    let id=inp.getAttribute('id');
-    if(id&&q(`label[for="${id}"]`,html))return;
-    if(inp.getAttribute('aria-label'))return;
-    let parent=inp.closest('label');
-    if(parent)return;
-    unlabeled++;
+  // Tag length
+  t.forEach(tag=>{
+    if(tag.length>50)r.push({i:'⚠️',t:`Tag too long: "${tag.substring(0,30)}..."`,d:'Tags should be short phrases.',a:'Keep individual tags under 50 characters.'});
   });
-  if(unlabeled>0)r.push({i:'⚠️',t:`Unlabeled Form Fields: ${unlabeled}`,d:'Form fields without labels or aria-labels.',a:'Add <label> or aria-label to all form elements for accessibility.'});
 
-  if(r.length===0)r.push({i:'✅',t:'Accessibility',d:'Basic a11y checks passed.',a:'Good!'});
+  // Specificity
+  let hasGeneric=t.some(tag=>['video','music','song','funny','new','watch'].includes(tag.toLowerCase()));
+  if(hasGeneric)r.push({i:'⚠️',t:'Generic tags found',d:'Avoid single-word generic tags.',a:'Use specific multi-word tags that describe your content.'});
 
   return r;
 }
 
-// =============== ADDITIONAL CHECKS ===============
-
-function analyzeURL(url){
+function analyzeThumbnail(thumbQual,title){
   let r=[];
-  try{
-    let u=new URL(url);
-    if(u.pathname==='/')r.push({i:'✅',t:'Clean URL Structure',d:`${u.hostname}${u.pathname}`,a:'Good.'});
-    else if(u.pathname.length>80)r.push({i:'⚠️',t:'Long URL',d:`${u.pathname.length} characters.`,a:'Keep URLs under 80 characters for better usability.'});
-    // Check for URL parameters
-    if(u.search)r.push({i:'⚠️',t:'URL Parameters',d:`${u.search.substring(0,50)}...`,a:'Dynamic URLs with parameters can cause duplicate content issues.'});
-    // Check for underscores
-    if(u.pathname.includes('_'))r.push({i:'⚠️',t:'Underscores in URL',d:'Use hyphens instead of underscores.',a:'Replace _ with - in URLs for better SEO.'});
-    // Uppercase
-    if(u.pathname!==u.pathname.toLowerCase())r.push({i:'⚠️',t:'Uppercase in URL',d:'URLs should be lowercase.',a:'Convert URL to lowercase.'});
-    // www vs non-www
-    if(u.hostname.startsWith('www.'))r.push({i:'✅',t:'WWW Subdomain',d:'Using www subdomain.',a:'Ensure non-www redirects to www (or vice versa).'});
-  }catch(e){}
+  if(!thumbQual){r.push({i:'❌',t:'Thumbnail not found',d:'Video may not exist or is private.',a:'Check if the video is accessible.'});return r;}
+
+  if(thumbQual==='maxresdefault')r.push({i:'✅',t:'High-res thumbnail available',d:'maxresdefault (1280x720)',a:'Custom high-res thumbnails perform better in search.'});
+  else if(thumbQual==='sddefault')r.push({i:'⚠️',t:'Standard res thumbnail',d:'sddefault (640x480)',a:'Upload a custom 1280x720 thumbnail for better CTR.'});
+  else r.push({i:'⚠️',t:'Low-res thumbnail only',d:`${thumbQual}`,a:'Custom thumbnails significantly improve click-through rate.'});
+
   return r;
+}
+
+function analyzeEngagement(oembed){
+  let r=[];
+  // No engagement data from oEmbed — ask user to input
+  r.push({i:'💡',t:'Manual engagement check',d:'For deeper analysis: check likes, views, comments, and CTR in YouTube Studio.',a:'High engagement signals boost SEO. Aim for 5%+ like/view ratio.'});
+  return r;
+}
+
+function analyzeChannel(oembed){
+  let r=[];
+  let author=oembed?.author_name||'Unknown';
+  let authorUrl=oembed?.author_url||'';
+  r.push({i:'✅',t:'Channel found',d:`${author} · ${authorUrl}`,a:'Optimize your channel page with keywords in the description.'});
+  return r;
+}
+
+function analyzeTiming(videoId){
+  // Can't get duration from oEmbed. Note to user.
+  return [{i:'💡',t:'Check video duration',d:'Optimal length depends on content type.',a:'Tutorials: 10-20min · Vlogs: 5-10min · Shorts: under 60s'}];
 }
 
 // =============== MAIN ===============
 
 async function analyze(){
   let url=$('urlInput').value.trim();
-  if(!url){toast('Enter a URL');return}
-  if(!url.startsWith('http'))url='https://'+url;
+  if(!url){toast('Enter a YouTube URL');return}
+
+  let videoId=extractId(url);
+  if(!videoId){toast('Invalid YouTube URL');return}
 
   let btn=$('analyzeBtn');
-  let originalText=btn.innerHTML;
   btn.disabled=true;
-  btn.innerHTML='<span class="spinner"></span> Fetching & analyzing...';
-  $('results').classList.remove('show');
-  $('scoreArea').innerHTML='<div style="text-align:center;padding:40px;color:var(--text2)"><div class="spinner" style="width:32px;height:32px;border-width:3px;margin:0 auto 12px"></div>Analyzing...</div>';
+  btn.innerHTML='<span class="spinner"></span> Loading...';
+  S.videoId=videoId;
 
   try{
-    let{html,headers}=await fetchPage(url);
-    S.html=html;S.url=url;
+    let oembed=await fetchOembed(videoId);
+    S.oembed=oembed;
+    let thumbQual=await checkThumbnail(videoId);
 
-    // Check for error page
-    let title=(q('title',html)||{}).textContent||'';
-    if(html.length<200||title.toLowerCase().includes('error')&&html.length<1000){
-      toast('Page returned minimal content; results may be incomplete.');
-    }
-
-    let categories={};
-    categories.meta=analyzeMeta(html,url);
-    categories.headings=analyzeHeadings(html);
-    categories.images=analyzeImages(html);
-    categories.links=analyzeLinks(html,url);
-    categories.content=analyzeContent(html);
-    categories.technical=analyzeTechnical(html,url);
-    categories.schema=analyzeSchema(html);
-    categories.security=analyzeSecurity(html,url);
-    categories.social=analyzeSocial(html);
-    categories.performance=analyzePerformance(html,headers);
-    categories.accessibility=analyzeAccessibility(html);
-    categories.mobile=analyzeMobile(html);
-    categories.url=analyzeURL(url);
-
-    S.results=categories;
-    renderResults(categories,url);
-    $('results').classList.add('show');
-    toast('Analysis complete!');
+    // Show auto-fetched data + editable fields
+    showDataForm(oembed,thumbQual,videoId);
+    toast('Data loaded! Edit fields below and click Analyze.');
   }catch(e){
     toast('Error: '+e.message);
-    $('scoreArea').innerHTML='';
+    // Show manual input form even if fetch fails
+    showManualForm(videoId);
   }
 
   btn.disabled=false;
   btn.innerHTML='🔍 Analyze';
 }
 
-// =============== PENDING ITEMS ===============
-let pending={};
-function addC(section,item){
-  if(!pending[section])pending[section]=[];
-  pending[section].push(item);
-}
+function showDataForm(oembed,thumbQual,videoId){
+  $('content').classList.add('show');
 
-// =============== RENDER ===============
+  let title=oembed.title||'';
+  let author=oembed.author_name||'Unknown';
+  let authorUrl=oembed.author_url||'#';
+  let thumbUrl=oembed.thumbnail_url||`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
-function renderResults(cats,url){
-  let all=[];
-  Object.values(cats).forEach(a=>all.push(...a));
-  let total=all.length,passed=all.filter(i=>i.i==='✅'||i.i==='✔️').length;
-  let score=total?Math.round(passed/total*100):0;
-  let grade=score>=90?'Excellent':score>=70?'Good':score>=50?'Needs Work':'Poor';
-  let color=score>=80?'var(--success)':score>=50?'var(--warn)':'var(--danger)';
-  let emoji=score>=80?'🟢':score>=50?'🟡':'🔴';
-  let domain=safeUrl(url);
-
-  // Score
-  $('scoreArea').innerHTML=`
-    <div class="score-ring" style="background:conic-gradient(${color} ${score}%,var(--surface) 0%)">
-      <div class="score-num" style="color:${color}">${score}</div>
-      <div class="score-label">/ 100</div>
-    </div>
-    <div class="score-info">
-      <div class="score-grade" style="color:${color}">${emoji} ${grade}</div>
-      <div class="score-detail">${passed} of ${total} checks passed</div>
-      <div class="url-badge"><a href="${url}" target="_blank" rel="noopener">${domain}</a></div>
-    </div>`;
-
-  // Summary
-  let labels={meta:'Meta',headings:'Headings',images:'Images',links:'Links',content:'Content',technical:'Technical',schema:'Schema',security:'Security',social:'Social',performance:'Perf',accessibility:'A11y',mobile:'Mobile',url:'URL'};
-  let sumHtml='';
-  for(let[k,items]of Object.entries(cats)){
-    let t=items.length;let p=items.filter(i=>i.i==='✅'||i.i==='✔️').length;
-    let pct=t?Math.round(p/t*100):0;let c=pct>=80?'var(--success)':pct>=50?'var(--warn)':'var(--danger)';
-    sumHtml+=`<div class="summary-card"><div class="sc-num" style="color:${c}">${p}/${t}</div><div class="sc-label">${labels[k]||k}</div></div>`;
-  }
-  $('summaryGrid').innerHTML=sumHtml;
-
-  // Tabs
-  let keys=Object.keys(cats);
-  let tabHtml=keys.map((k,i)=>`<button class="tab-btn${i===0?' active':''}" data-tab="${k}" onclick="switchTab('${k}')">${labels[k]||k}</button>`).join('');
-  $('tabBar').innerHTML=tabHtml;
-
-  let contHtml=keys.map((k,i)=>`<div class="tab-body${i===0?' show':''}" id="tab-${k}"></div>`).join('');
-  $('tabContainer').innerHTML=contHtml;
-
-  renderTabContent();
-}
-
-function renderTabContent(){
-  let keys=Object.keys(S.results);
-  for(let key of keys){
-    let el=$('tab-'+key);
-    if(!el)continue;
-    let items=[...(S.results[key]||[]),...(pending[key]||[])];
-    if(!items.length){el.innerHTML='<div class="empty">No issues found.</div>';continue}
-    el.innerHTML='<div class="checks">'+items.map(i=>`
-      <div class="check">
-        <div class="check-icon ${i.i==='✅'?'pass':i.i==='❌'?'fail':'warn'}">${i.i}</div>
-        <div class="check-body">
-          <div class="check-title">${i.t}</div>
-          ${i.d?`<div class="check-detail">${i.d}</div>`:''}
-          ${i.a?`<div class="check-action">💡 ${i.a}</div>`:''}
+  $('mainResults').innerHTML=`
+    <div class="results-section">
+      <div class="video-hero">
+        <img src="${thumbUrl}" alt="Thumbnail" crossorigin="anonymous">
+        <div class="video-hero-info">
+          <h2>${title}</h2>
+          <div class="meta">
+            <span class="meta-item">📺 <a href="${authorUrl}" target="_blank" rel="noopener" style="color:var(--accent)">${author}</a></span>
+            <span class="meta-item">🎬 <a href="https://youtu.be/${videoId}" target="_blank" rel="noopener" style="color:var(--text2)">${videoId}</a></span>
+          </div>
         </div>
       </div>
-    `).join('')+'</div>';
+    </div>
+
+    <div class="results-section">
+      <h3 style="font-size:15px;font-weight:600;margin-bottom:8px">📝 Edit Video Details</h3>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Auto-fetched from YouTube. Edit for more accurate analysis.</p>
+      <div class="editor-form">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="editTitle" value="${esc(title)}" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="editDesc" rows="4" placeholder="Paste video description..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Tags (press Enter or comma to add)</label>
+          <div class="tags-input" id="tagsContainer">
+            <input class="tag-input-inner" id="tagInput" placeholder="Type tag and press Enter..." onkeydown="tagKeydown(event)">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="runFullAnalysis()">🚀 Run Full SEO Analysis</button>
+      </div>
+    </div>
+  `;
+}
+
+function showManualForm(videoId){
+  $('content').classList.add('show');
+  $('mainResults').innerHTML=`
+    <div class="results-section">
+      <h3 style="font-size:15px;font-weight:600;margin-bottom:8px">🎬 Video: ${videoId}</h3>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Could not auto-fetch. Enter details manually for SEO analysis.</p>
+      <div class="editor-form">
+        <div class="form-group">
+          <label>Video Title</label>
+          <input type="text" id="editTitle" maxlength="100" placeholder="Enter video title...">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="editDesc" rows="4" placeholder="Paste video description..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Tags</label>
+          <div class="tags-input" id="tagsContainer">
+            <input class="tag-input-inner" id="tagInput" placeholder="Type tag and press Enter..." onkeydown="tagKeydown(event)">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="runFullAnalysis()">🚀 Run Full SEO Analysis</button>
+      </div>
+    </div>
+  `;
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+let tags=[];
+function addTag(t){
+  let v=t.trim();
+  if(!v||tags.includes(v))return;
+  tags.push(v);
+  renderTags();
+}
+function removeTag(t){
+  tags=tags.filter(x=>x!==t);
+  renderTags();
+}
+function tagKeydown(e){
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    let inp=$('tagInput');
+    addTag(inp.value);
+    inp.value='';
   }
 }
-
-function switchTab(key){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelector(`.tab-btn[data-tab="${key}"]`)?.classList.add('active');
-  document.querySelectorAll('.tab-body').forEach(b=>b.classList.remove('show'));
-  $('tab-'+key)?.classList.add('show');
+function renderTags(){
+  let c=$('tagsContainer');
+  if(!c)return;
+  let inp=c.querySelector('.tag-input-inner');
+  c.innerHTML=tags.map(t=>`<span class="tag">${esc(t)} <button onclick="removeTag('${esc(t)}')">×</button></span>`).join('');
+  c.appendChild(inp);
+  inp.focus();
 }
 
-// =============== INIT ===============
+function runFullAnalysis(){
+  let title=$('editTitle')?.value||S.oembed?.title||'';
+  let desc=$('editDesc')?.value||'';
+  let allTags=[...tags];
+
+  let results={
+    title:analyzeTitle(S.oembed?.title,title),
+    description:analyzeDescription(desc),
+    tags:analyzeTags(allTags),
+    thumbnail:analyzeThumbnail('maxresdefault',title),
+    channel:analyzeChannel(S.oembed),
+    engagement:analyzeEngagement(S.oembed),
+    timing:analyzeTiming(S.videoId),
+  };
+
+  showResults(results,title,desc,allTags,S.videoId,S.oembed);
+}
+
+function showResults(results,title,desc,tags,videoId,oembed){
+  // Calculate score
+  let all=[];
+  Object.values(results).forEach(a=>all.push(...a));
+  let total=all.length;
+  let passed=all.filter(i=>i.i==='✅').length;
+  let warned=all.filter(i=>i.i==='⚠️'||i.i==='💡').length;
+  let failed=all.filter(i=>i.i==='❌').length;
+  let score=total?Math.round(passed/total*100):0;
+  let grade=score>=80?'good':score>=50?'ok':'bad';
+  let gradeText=score>=80?'Great SEO!':score>=50?'Needs Work':'Poor';
+
+  let tabKeys=['title','description','tags','thumbnail','channel','engagement','timing'];
+  let tabLabels={title:'🎯 Title',description:'📝 Description',tags:'🏷️ Tags',thumbnail:'🖼️ Thumbnail',channel:'📺 Channel',engagement:'❤️ Engagement',timing:'⏱️ Timing'};
+
+  // Render results
+  $('mainResults').innerHTML=`
+    ${oembed?`
+    <div class="results-section">
+      <div class="video-hero">
+        <img src="${oembed.thumbnail_url||`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}" alt="" crossorigin="anonymous">
+        <div class="video-hero-info">
+          <h2>${esc(title)}</h2>
+          <div class="meta">
+            <span class="score-badge ${grade}">${score}/100 · ${gradeText}</span>
+            <span class="meta-item">✅ ${passed} pass</span>
+            <span class="meta-item">⚠️ ${warned} warnings</span>
+            <span class="meta-item">❌ ${failed} fails</span>
+          </div>
+        </div>
+      </div>
+    </div>`:''}
+
+    <div class="tab-bar" id="resTabBar">
+      ${tabKeys.map((k,i)=>`<button class="tab-btn${i===0?' active':''}" data-tab="res-${k}" onclick="switchResTab('res-${k}')">${tabLabels[k]}</button>`).join('')}
+    </div>
+
+    ${tabKeys.map((k,i)=>`
+      <div class="tab-body${i===0?' show':''}" id="res-${k}">
+        <div class="checks">
+          ${(results[k]||[]).map(item=>`
+            <div class="check">
+              <div class="check-icon ${item.i==='✅'?'pass':item.i==='❌'?'fail':item.i==='⚠️'?'warn':'warn'}">${item.i}</div>
+              <div class="check-body">
+                <div class="check-title">${item.t}</div>
+                ${item.d?`<div class="check-detail">${item.d}</div>`:''}
+                ${item.a?`<div class="check-action">💡 ${item.a}</div>`:''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('')}
+  `;
+
+  // Scroll to results
+  $('content').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function switchResTab(tabId){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.tab-btn[data-tab="${tabId}"]`)?.classList.add('active');
+  document.querySelectorAll('.tab-body').forEach(b=>b.classList.remove('show'));
+  $(tabId)?.classList.add('show');
+}
+
+// Init
 document.addEventListener('DOMContentLoaded',()=>{document.documentElement.setAttribute('data-theme','')});
 $('urlInput').addEventListener('keydown',e=>{if(e.key==='Enter')analyze()});
 </script>
