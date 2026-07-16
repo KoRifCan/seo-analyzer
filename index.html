@@ -19,12 +19,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .h-actions{display:flex;gap:8px}
 .btn-icon{width:36px;height:36px;border:none;border-radius:var(--rs);background:var(--surface);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all var(--t)}
 .btn-icon:hover{background:var(--shover);transform:scale(1.05)}
-.hero{padding:28px 24px 12px;text-align:center}
-.hero h1{font-size:28px;font-weight:800;margin-bottom:4px;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero{padding:28px 24px 8px;text-align:center}
+.hero h1{font-size:28px;font-weight:800;margin-bottom:2px;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .hero p{color:var(--text2);font-size:14px}
-.input-section{padding:0 24px 20px;display:flex;gap:10px;max-width:700px;margin:0 auto;flex-wrap:wrap}
+.input-section{padding:0 24px 12px;display:flex;gap:10px;max-width:700px;margin:0 auto;flex-wrap:wrap}
 .input-field{flex:1;min-width:200px;padding:12px 16px;background:var(--surface);border:1px solid var(--gborder);border-radius:var(--rs);color:var(--text);font-size:14px;outline:none;transition:all var(--t)}
 .input-field:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--pglow)}
+.key-section{max-width:700px;margin:0 auto;padding:0 24px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
+.key-input{flex:1;min-width:180px;padding:6px 10px;background:var(--surface);border:1px solid var(--gborder);border-radius:var(--rs);color:var(--text);font-size:11px;outline:none;transition:all var(--t)}
+.key-input:focus{border-color:var(--accent)}
+.key-input::placeholder{color:var(--text2);font-size:11px}
+.key-label{font-size:11px;color:var(--text2);white-space:nowrap}
+.key-status{font-size:10px;color:var(--success);display:none}
 .btn-primary{padding:12px 24px;background:linear-gradient(135deg,var(--primary),#a29bfe);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;transition:all var(--t);white-space:nowrap;display:flex;align-items:center;gap:6px}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 24px var(--pglow)}
 .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
@@ -35,7 +41,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .video-hero img{width:200px;border-radius:var(--rs);flex-shrink:0}
 .video-hero-info{flex:1;min-width:200px}
 .video-hero-info h2{font-size:20px;font-weight:700;margin-bottom:6px;line-height:1.3}
-.video-hero-info .meta{font-size:13px;color:var(--text2);display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.video-hero-info .meta{font-size:13px;color:var(--text2);display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}
 .meta-item{display:flex;align-items:center;gap:4px}
 .score-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:14px;font-weight:700}
 .score-badge.good{background:rgba(0,184,148,0.15);color:var(--success);border:1px solid rgba(0,184,148,0.3)}
@@ -82,12 +88,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .rec-card .rec-body{font-size:12px;color:var(--text2);line-height:1.5}
 .auto-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(0,184,148,0.12);color:var(--success)}
 .manual-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(253,203,110,0.12);color:var(--warn)}
+.warn-banner{font-size:12px;padding:10px 14px;background:rgba(253,203,110,0.1);border:1px solid rgba(253,203,110,0.2);border-radius:var(--rs);margin-bottom:12px;display:flex;align-items:flex-start;gap:8px}
+.warn-banner .wb-icon{font-size:16px;flex-shrink:0}
+.warn-banner .wb-text{flex:1}
+.warn-banner .wb-title{font-weight:600;font-size:12px;margin-bottom:2px}
+.warn-banner .wb-body{color:var(--text2);font-size:11px}
 @media(max-width:640px){
   .header{padding:12px 16px}
   .h-title{font-size:15px}
-  .hero{padding:20px 16px 10px}
+  .hero{padding:20px 16px 8px}
   .hero h1{font-size:22px}
-  .input-section{padding:0 16px 16px;flex-direction:column}
+  .input-section,.key-section{padding-left:16px;padding-right:16px}
+  .input-section{flex-direction:column}
   .input-field{min-width:100%}
   .content{padding:0 16px 30px}
   .video-hero{flex-direction:column}
@@ -115,6 +127,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="btn-primary" id="analyzeBtn" onclick="analyze()">🔍 Analyze</button>
   </div>
 
+  <div class="key-section">
+    <span class="key-label">🔑 API Key (optional):</span>
+    <input class="key-input" id="apiKey" type="text" placeholder="AIzaSy... — get from console.cloud.google.com" autocomplete="off" spellcheck="false">
+    <span class="key-status" id="keyStatus">✅ saved</span>
+  </div>
+
   <div class="content" id="content">
     <div id="mainResults"></div>
   </div>
@@ -128,9 +146,10 @@ function qs(s){return document.querySelector(s)}
 function toast(m){let c=$('toast'),t=document.createElement('div');t.className='toast';t.textContent=m;c.appendChild(t);setTimeout(()=>t.remove(),4000)}
 function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',S.theme==='dark'?'':'light');$('themeBtn').textContent=S.theme==='dark'?'🌙':'☀️'}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function fmtNum(n){if(!n)return'0';n=Number(n);if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString()}
+function fmtNum(n){if(!n||n==='0')return'—';n=Number(n);if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString()}
 function fmtDur(s){if(!s)return'—';let m=Math.floor(s/60),h=Math.floor(m/60);m=m%60;s=Math.floor(s%60);return h>0?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`}
 function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}catch(e){return d}}
+function fmtIso(d){if(!d)return null;try{let m=d.match(/PT(\d+H)?(\d+M)?(\d+S)?/);if(!m)return null;let h=parseInt(m[1])||0,mn=parseInt(m[2])||0,s=parseInt(m[3])||0;return h*3600+mn*60+s}catch(e){return null}}
 
 function extractId(url){
   if(!url)return null;
@@ -141,7 +160,7 @@ function extractId(url){
   return m?m[1]:null;
 }
 
-// =============== DATA FETCHING ===============
+// =============== DATA SOURCES ===============
 
 async function fetchOembed(videoId){
   let r=await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,{signal:AbortSignal.timeout(6000)});
@@ -159,48 +178,24 @@ async function checkThumbnail(videoId){
   return null;
 }
 
+// YouTube Data API v3 — FULL CORS support
+async function fetchDataAPI(videoId,apiKey){
+  if(!apiKey)return null;
+  let r=await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${videoId}&key=${apiKey}`,{signal:AbortSignal.timeout(8000)});
+  if(!r.ok){
+    let e=await r.json().catch(()=>({}));
+    throw new Error(e?.error?.message||'Data API error');
+  }
+  let d=await r.json();
+  if(!d.items||!d.items.length)throw new Error('Video not found');
+  return d.items[0];
+}
+
+// YouTube Inner API via CORS proxy cascade
 async function fetchInnerAPI(videoId){
   let proxies=[
-    async()=>{
-      let r=await fetch('https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({videoId,context:{client:{clientName:'WEB',clientVersion:'2.20250331.00.00',hl:'en',gl:'US'}}}),
-        signal:AbortSignal.timeout(5000)
-      });
-      if(!r.ok)throw new Error('Direct YouTube API failed');
-      return r.json();
-    },
-    async()=>{
-      let r=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent('https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'),{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({videoId,context:{client:{clientName:'WEB',clientVersion:'2.20250331.00.00',hl:'en',gl:'US'}}}),
-        signal:AbortSignal.timeout(8000)
-      });
-      if(!r.ok)throw new Error('Proxy 1 failed');
-      return r.json();
-    },
-    async()=>{
-      let r=await fetch('https://corsproxy.io/?'+encodeURIComponent('https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'),{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({videoId,context:{client:{clientName:'WEB',clientVersion:'2.20250331.00.00',hl:'en',gl:'US'}}}),
-        signal:AbortSignal.timeout(8000)
-      });
-      if(!r.ok)throw new Error('Proxy 2 failed');
-      return r.json();
-    },
-    async()=>{
-      let r=await fetch(`https://pipedapi.kavin.rocks/api/v1/videos/${videoId}`,{signal:AbortSignal.timeout(5000)});
-      if(!r.ok)throw new Error('Piped failed');
-      return r.json();
-    },
-    async()=>{
-      let r=await fetch(`https://vid.puffyan.us/api/v1/videos/${videoId}`,{signal:AbortSignal.timeout(6000)});
-      if(!r.ok)throw new Error('Invidious failed');
-      return r.json();
-    },
+    ()=>fetch('https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({videoId,context:{client:{clientName:'WEB',clientVersion:'2.20250331.00.00',hl:'en',gl:'US'}}}),signal:AbortSignal.timeout(4000)}).then(r=>{if(!r.ok)throw Error();return r.json()}),
+    ()=>fetch('https://api.allorigins.win/raw?url='+encodeURIComponent('https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({videoId,context:{client:{clientName:'WEB',clientVersion:'2.20250331.00.00',hl:'en',gl:'US'}}}),signal:AbortSignal.timeout(8000)}).then(r=>{if(!r.ok)throw Error();return r.json()})
   ];
   for(let p of proxies){
     try{
@@ -223,16 +218,16 @@ function analyzeTitle(title){
   else if(len<70)r.push({i:'✅',t:`Optimal length (${len} chars)`,d:'45-65 is the sweet spot for CTR.',a:'Well optimized for search results display.'});
   else r.push({i:'⚠️',t:`Too long (${len} chars)`,d:'YouTube truncates titles at ~70 chars in most views.',a:'Move important keywords to the first 60 characters.'});
   let fw=t.split(/\s+/).slice(0,3).join(' ');
-  if(fw.length>4)r.push({i:'✅',t:'Keywords front-loaded',d:`First 3 words: "${fw.substring(0,35)}"`,a:'Important keywords at the beginning of the title.'});
+  if(fw.length>4)r.push({i:'✅',t:'Keywords front-loaded',d:`First words: "${fw.substring(0,35)}"`,a:'Important keywords at the beginning of the title.'});
   else r.push({i:'⚠️',t:'Front-load your best keywords',d:'Put your most important search terms first.',a:'YouTube and Google prioritize the start of the title.'});
   if(/[|–—-]/.test(t))r.push({i:'✅',t:'Clean separator used',d:'Pipes or dashes improve readability.',a:'Good for organizing title structure.'});
   else r.push({i:'💡',t:'Try a pipe separator',d:'"Keyword | Category | Video Name" format works well.',a:'Use | or — to separate ideas in your title.'});
   let upper=(t.match(/[A-Z]/g)||[]).length;
-  if(upper>t.length*0.5&&t.length>10)r.push({i:'❌',t:'Excessive CAPS',d:'All-caps titles appear spammy.',a:'Use title case (capitalize important words) — not ALL CAPS.'});
-  if(t.split(/\s+/).length<=3)r.push({i:'⚠️',t:'Title too few words',d:`Only ${t.split(/\s+/).length} words.`,a:'Use 5-10 words in your title for best SEO.'});
+  if(upper>t.length*0.5&&t.length>10)r.push({i:'❌',t:'Excessive CAPS',d:'All-caps titles appear spammy.',a:'Use title case — not ALL CAPS.'});
+  if(t.split(/\s+/).length<=3)r.push({i:'⚠️',t:'Too few words',d:`Only ${t.split(/\s+/).length} words.`,a:'Use 5-10 words in your title for best SEO.'});
   let num=(t.match(/\d+/g)||[]).length;
   if(num>0)r.push({i:'✅',t:'Numbers in title',d:'Numbers boost CTR (e.g., "5 Tips", "2024 Guide").',a:'Numbers grab attention in search results.'});
-  if(/how|what|why|best|top|guide|tutorial|tips|review|vs|with/i.test(t))r.push({i:'✅',t:'High-CTR power words',d:'Words like "How", "Best", "Guide" improve click-through rate.',a:'Great word choices for engagement.'});
+  if(/how|what|why|best|top|guide|tutorial|tips|review|vs|with/i.test(t))r.push({i:'✅',t:'High-CTR power words',d:'Words like "How", "Best", "Guide" improve CTR.',a:'Great word choices for engagement.'});
   return r;
 }
 
@@ -243,18 +238,18 @@ function analyzeDescription(desc,autoDesc){
   let len=d.length;
   if(len<200)r.push({i:'❌',t:`Very short (${len} chars)`,d:'Aim for at least 200 characters.',a:'Expand your description with relevant context and keywords.'});
   else if(len<500)r.push({i:'⚠️',t:`Could be longer (${len} chars)`,d:'Optimal: 500-2000 characters.',a:'Add more details, timestamps, and social links.'});
-  else if(len<2000)r.push({i:'✅',t:`Good length (${len} chars)`,d:'Well within the optimal 500-2000 range.',a:'Great balance of detail and readability.'});
+  else if(len<2000)r.push({i:'✅',t:`Good length (${len} chars)`,d:'Well within the optimal range.',a:'Great balance of detail and readability.'});
   else r.push({i:'✅',t:`Comprehensive (${len} chars)`,d:'Detailed descriptions rank better.',a:'Excellent — this level of detail helps both users and search.'});
   let links=(d.match(/https?:\/\/[^\s]+/g)||[]);
   if(links.length>0)r.push({i:'✅',t:`${links.length} link(s) found`,d:'Links improve engagement and traffic.',a:'Put your most important links in the first 2 lines.'});
-  else r.push({i:'⚠️',t:'No links in description',d:'Link to your website, social media, or related videos.',a:'Add 2-3 relevant links. YouTube values outbound links.'});
+  else r.push({i:'⚠️',t:'No links in description',d:'Link to your website, social media, or related videos.',a:'Add 2-3 relevant links.'});
   let hashtags=(d.match(/#[a-zA-Z0-9_]+/g)||[]);
-  if(hashtags.length>0)r.push({i:hashtags.length<=15?'✅':'⚠️',t:`${hashtags.length} hashtag(s)`,d:hashtags.length>15?'Max 15 tags shown.':'Hashtags boost discovery.',a:hashtags.length>15?'Stick to 3-5 hashtags in the description.':'Good — use 3-5 relevant hashtags.'});
-  else r.push({i:'💡',t:'Add hashtags',d:'Hashtags help YouTube categorize your video.',a:'Add 3-5 hashtags in your description (e.g., #tutorial #SEO).'});
+  if(hashtags.length>0)r.push({i:hashtags.length<=15?'✅':'⚠️',t:`${hashtags.length} hashtag(s)`,d:hashtags.length>15?'Max 15 tags shown.':'Hashtags boost discovery.',a:hashtags.length>15?'Stick to 3-5 hashtags.':'Good — use 3-5 relevant hashtags.'});
+  else r.push({i:'💡',t:'Add hashtags',d:'Hashtags help YouTube categorize your video.',a:'Add 3-5 hashtags (e.g., #tutorial #SEO).'});
   let ts=d.match(/\d+:\d+/g);
   if(ts&&ts.length>=2)r.push({i:'✅',t:`${ts.length} timestamps`,d:'Chapter markers improve search indexing.',a:'Timestamps create video chapters in YouTube search results.'});
   else if(ts&&ts.length===1)r.push({i:'💡',t:'More timestamps needed',d:'Add 3+ chapter markers for best results.',a:'Add timestamps like 0:00 Intro, 1:30 Main Topic, 5:00 Conclusion.'});
-  else r.push({i:'💡',t:'No timestamps',d:'Chapters improve user experience and SEO.',a:'Add 3-5 timestamps. Videos with chapters get 4x more search visibility.'});
+  else r.push({i:'💡',t:'No timestamps',d:'Chapters improve user experience and SEO.',a:'Add 3-5 timestamps. Videos with chapters get more search visibility.'});
   let words=d.toLowerCase().replace(/https?:\/\/[^\s]+/g,'').split(/\s+/).filter(w=>w.length>2&&!/^[#@]/.test(w));
   let stop=new Set('the and for are was you all can has had not its but any how our out use may now see get who try her his its own did got set put say she too per via etc this that'.split(' '));
   let freq={};
@@ -281,11 +276,9 @@ function analyzeTags(tags,fetchedTags){
   longTags.forEach(tag=>r.push({i:'⚠️',t:'Tag too long',d:`"${tag.substring(0,25)}..." (${tag.length} chars)`,a:'Keep tags under 50 characters — use short phrases.'}));
   let generic=['video','music','song','funny','new','watch','clip','film','movie','tv','show','episode','trailer','vlog','dance','cover','live','official','full','hd','4k'];
   let hasGeneric=t.some(tag=>generic.includes(tag.toLowerCase().trim()));
-  if(hasGeneric)r.push({i:'⚠️',t:'Generic tags found',d:'Single-word generic tags (like "video" or "music") add little SEO value.',a:'Use specific multi-word tags (e.g., "guitar tutorial for beginners").'});
+  if(hasGeneric)r.push({i:'⚠️',t:'Generic tags found',d:'Single-word generic tags (like "video" or "music") add little SEO value.',a:'Use specific multi-word tags.'});
   let keywordTags=t.filter(tag=>tag.split(/\s+/).length>=3);
   if(keywordTags.length>2)r.push({i:'✅',t:'Good multi-word tags',d:`${keywordTags.length} tags with 3+ words.`,a:'Multi-word tags improve specific search ranking.'});
-  let capitalTags=t.filter(tag=>tag===tag.toUpperCase()&&tag.length>3);
-  if(capitalTags.length>0)r.push({i:'💡',t:'Mixed case tags work better',d:'ALL CAPS tags look spammy.',a:'Use natural case for tags (e.g., "How to Code" not "HOW TO CODE").'});
   return r;
 }
 
@@ -295,7 +288,7 @@ function analyzeThumbnail(thumbQual){
   if(thumbQual==='maxresdefault')r.push({i:'✅',t:'HD thumbnail available',d:'1280×720 (maxresdefault)',a:'High-res thumbnails get 30%+ more clicks. Great!'});
   else if(thumbQual==='sddefault')r.push({i:'⚠️',t:'Standard resolution',d:'640×480 (sddefault)',a:'Upload a 1280×720 custom thumbnail for higher CTR.'});
   else r.push({i:'⚠️',t:'Low resolution',d:`${thumbQual}`,a:'Custom HD thumbnails significantly boost click-through rate.'});
-  r.push({i:'💡',t:'Thumbnail best practices',d:'Use faces, high contrast, and text overlays.',a:'Thumbnails with faces get 2x more clicks. Add 1-3 bold words of text.'});
+  r.push({i:'💡',t:'Thumbnail best practices',d:'Use faces, high contrast, and text overlays.',a:'Thumbnails with faces get 2x more clicks.'});
   return r;
 }
 
@@ -303,9 +296,9 @@ function analyzeChannel(oembed,fullData){
   let r=[];
   let author=oembed?.author_name||fullData?.author||'Unknown';
   let url=oembed?.author_url||'';
-  r.push({i:'✅',t:`Channel: ${author}`,d:url||'Channel found.',a:'Optimize your channel about section with keywords for channel search.'});
+  r.push({i:'✅',t:`Channel: ${author}`,d:url||'Channel found.',a:'Optimize your channel about section with keywords.'});
   let subs=fullData?.subCount;
-  if(subs)r.push({i:subs>1000?'✅':'💡',t:`${fmtNum(subs)} subscribers`,d:'Subscriber count influences search ranking.',a:'Encourage viewers to subscribe with a call-to-action in your videos.'});
+  if(subs)r.push({i:subs>1000?'✅':'💡',t:`${fmtNum(subs)} subscribers`,d:'Subscriber count influences search ranking.',a:'Encourage viewers to subscribe.'});
   return r;
 }
 
@@ -314,17 +307,17 @@ function analyzeEngagement(fullData){
   let views=fullData?.viewCount||fullData?.views;
   let likes=fullData?.likeCount||fullData?.likes;
   let comments=fullData?.commentCount;
-  if(views){
+  if(views&&views!=='0'&&views!=='—'){
     r.push({i:'✅',t:`${fmtNum(views)} views`,d:'View count affects search ranking.',a:'Higher views boost credibility. Promote your video across platforms.'});
-    if(likes){
+    if(likes&&likes!=='0'){
       let ratio=Number(likes)/Number(views)*100;
-      if(ratio>=5)r.push({i:'✅',t:`${ratio.toFixed(1)}% like ratio`,d:`${fmtNum(likes)} likes · ${fmtNum(views)} views`,a:'Excellent engagement! YouTube rewards high like ratios.'});
-      else if(ratio>=3)r.push({i:'⚠️',t:`${ratio.toFixed(1)}% like ratio`,d:`${fmtNum(likes)} likes · ${fmtNum(views)} views`,a:'Aim for 5%+ like-to-view ratio. Ask viewers to like the video.'});
-      else r.push({i:'⚠️',t:`${ratio.toFixed(1)}% like ratio`,d:`${fmtNum(likes)} likes · ${fmtNum(views)} views`,a:'Low like ratio. Add a call-to-action asking viewers to like.'});
+      if(ratio>=5)r.push({i:'✅',t:`${ratio.toFixed(1)}% like ratio`,d:`${fmtNum(likes)} likes`,a:'Excellent engagement! YouTube rewards high like ratios.'});
+      else if(ratio>=3)r.push({i:'⚠️',t:`${ratio.toFixed(1)}% like ratio`,d:`${fmtNum(likes)} likes`,a:'Aim for 5%+ like-to-view ratio. Ask viewers to like.'});
+      else r.push({i:'⚠️',t:`${ratio.toFixed(1)}% like ratio`,d:`${fmtNum(likes)} likes`,a:'Low like ratio. Add a call-to-action asking viewers to like.'});
     }
-    if(comments)r.push({i:Number(comments)>100?'✅':'💡',t:`${fmtNum(comments)} comments`,d:'Comments signal active engagement.',a:'Reply to comments and ask questions to boost engagement.'});
+    if(comments)r.push({i:Number(comments)>100?'✅':'💡',t:`${fmtNum(comments)} comments`,d:'Comments signal active engagement.',a:'Reply to comments and ask questions.'});
   }else{
-    r.push({i:'💡',t:'Engagement data unavailable',d:'Auto-fetch could not get view/like counts.',a:'Check YouTube Studio for engagement metrics. Aim for 5%+ like ratio.'});
+    r.push({i:'💡',t:'Engagement data unavailable',d:'Auto-fetch could not get view/like counts.',a:'Check YouTube Studio for engagement metrics.'});
   }
   return r;
 }
@@ -334,9 +327,9 @@ function analyzeDuration(fullData){
   let dur=fullData?.lengthSeconds||fullData?.duration;
   if(dur){
     let min=dur/60;
-    r.push({i:'✅',t:`Duration: ${fmtDur(dur)}`,d:'Video length affects search ranking and retention.',a:min<2?'Shorts under 60s get different algorithm treatment.':min<5?'5-10 min is good for tutorials.':'10-20 min is ideal for in-depth content. Watch time improves ranking.'});
-    if(min<2)r.push({i:'💡',t:'Short-form content',d:'YouTube Shorts (<60s) compete in a different feed.',a:'Optimize for Shorts: vertical format, under 60s, #Shorts in title/desc.'});
-    else if(min<10)r.push({i:'💡',t:'Medium length',d:'5-10 min videos have good retention.',a:'Consider 10-20 min for higher total watch time (YouTube loves this).'});
+    r.push({i:'✅',t:`Duration: ${fmtDur(dur)}`,d:'Video length affects search ranking and retention.',a:min<2?'Shorts under 60s get different algorithm treatment.':min<5?'5-10 min is good for tutorials.':'10-20 min is ideal for in-depth content.'});
+    if(min<2)r.push({i:'💡',t:'Short-form content',d:'YouTube Shorts (<60s) compete in a different feed.',a:'Optimize for Shorts: vertical, under 60s, #Shorts in title.'});
+    else if(min<10)r.push({i:'💡',t:'Medium length',d:'5-10 min videos have good retention.',a:'Consider 10-20 min for higher total watch time.'});
     else if(min<30)r.push({i:'✅',t:'Ideal watch time length',d:'10-20 min videos perform best in search.',a:'Great length for maximizing watch time metrics.'});
     else r.push({i:'💡',t:'Long-form content',d:'20+ min videos need strong retention.',a:'Use chapters and engaging hooks to keep viewers watching.'});
   }else{
@@ -352,8 +345,7 @@ function analyzePublishDate(fullData){
     let d=new Date(pub);
     let now=new Date();
     let days=Math.floor((now-d)/(86400000));
-    let months=Math.floor(days/30);
-    r.push({i:'✅',t:`Published: ${fmtDate(pub)}`,d:days===0?'Today':`${days} day${days>1?'s':''} ago`,a:months>6?'Consider refreshing or updating older videos for relevance.':'Fresh content ranks better. Keep uploading regularly!'});
+    r.push({i:'✅',t:`Published: ${fmtDate(pub)}`,d:days===0?'Today':`${days} day${days>1?'s':''} ago`,a:days>365?'Consider refreshing older content.':'Fresh content ranks better. Keep uploading regularly!'});
     if(days>365)r.push({i:'💡',t:'Video is over a year old',d:'YouTube may rank newer content higher.',a:'Add an updated description or pinned comment with new info.'});
   }else{
     r.push({i:'💡',t:'Publish date not detected',d:'Auto-fetch could not determine publish date.',a:'Newer videos get a temporary ranking boost from YouTube.'});
@@ -363,9 +355,9 @@ function analyzePublishDate(fullData){
 
 function analyzeCategory(fullData){
   let r=[];
-  let catMap={'1':'Film & Animation','2':'Autos & Vehicles','10':'Music','15':'Pets & Animals','17':'Sports','18':'Short Movies','19':'Travel & Events','20':'Gaming','21':'Videoblogging','22':'People & Blogs','23':'Comedy','24':'Entertainment','25':'News & Politics','26':'Howto & Style','27':'Education','28':'Science & Technology','29':'Nonprofits & Activism','30':'Movies','31':'Anime/Animation','32':'Action/Adventure','33':'Classics','34':'Comedy','35':'Documentary','36':'Drama','37':'Family','38':'Foreign','39':'Horror','40':'Sci-Fi/Fantasy','41':'Thriller','42':'Shorts','43':'Shows','44':'Trailers'};
+  let catMap={1:'Film & Animation',2:'Autos & Vehicles',10:'Music',15:'Pets & Animals',17:'Sports',18:'Short Movies',19:'Travel & Events',20:'Gaming',21:'Videoblogging',22:'People & Blogs',23:'Comedy',24:'Entertainment',25:'News & Politics',26:'Howto & Style',27:'Education',28:'Science & Technology',29:'Nonprofits & Activism',30:'Movies',31:'Anime/Animation',32:'Action/Adventure',33:'Classics',34:'Comedy',35:'Documentary',36:'Drama',37:'Family',38:'Foreign',39:'Horror',40:'Sci-Fi/Fantasy',41:'Thriller',42:'Shorts',43:'Shows',44:'Trailers'};
   let cat=fullData?.category;
-  if(cat){
+  if(cat&&cat!=='0'){
     let cn=catMap[cat]||cat;
     r.push({i:'✅',t:`Category: ${cn}`,d:`ID: ${cat}`,a:'Choosing the right category helps YouTube recommend your video.'});
   }else{
@@ -377,8 +369,7 @@ function analyzeCategory(fullData){
 function generateRecommendations(results){
   let fails=[]; let warns=[];
   Object.values(results).forEach(arr=>arr.forEach(i=>{
-    if(i.i==='❌')fails.push(i);
-    else if(i.i==='⚠️'||i.i==='💡')warns.push(i);
+    if(i.i==='❌')fails.push(i);else if(i.i==='⚠️'||i.i==='💡')warns.push(i);
   }));
   let recs=[];
   if(fails.length>=3)recs.push({title:'🔴 Critical improvements needed',body:`Fix ${fails.length} critical issues first: ${fails.slice(0,3).map(i=>i.t).join(', ')}. These have the biggest impact on your search ranking.`});
@@ -390,28 +381,30 @@ function generateRecommendations(results){
   if(shortTitle)recs.push({title:'🎯 Rewrite your title',body:'Your title is the most visible element in search. Include your target keyword in the first 3-4 words and keep it under 65 characters.'});
   let lowThumb=results.thumbnail?.some(i=>i.i!=='✅');
   if(lowThumb)recs.push({title:'🖼️ Upgrade your thumbnail',body:'Custom HD thumbnails (1280×720) increase CTR by 30%+. Use a close-up face, bold text overlay, and high contrast colors.'});
-  let lowEngagement=results.engagement?.some(i=>i.t.includes('low')||i.t.includes('unavailable'));
-  if(lowEngagement)recs.push({title:'❤️ Boost engagement',body:'Ask viewers to like, comment, and subscribe at the start and end of your video. Pin a comment with a question to spark discussion.'});
+  let lowEngagement=results.engagement?.some(i=>i.t.includes('unavailable'));
+  if(lowEngagement)recs.push({title:'❤️ Boost engagement',body:'Ask viewers to like, comment, and subscribe at the start and end of your video. Pin a comment with a question.'});
   if(recs.length===0)recs.push({title:'🌟 Great job!',body:'Your video SEO looks solid. Keep monitoring YouTube Studio for audience retention data and iterate on what works.'});
   return recs;
 }
 
-// =============== MAIN UI ===============
+// =============== MAIN ===============
 
 async function analyze(){
   let url=$('urlInput').value.trim();
   if(!url){toast('Enter a YouTube URL');return}
   let videoId=extractId(url);
   if(!videoId){toast('Invalid YouTube URL');return}
+
+  let apiKey=$('apiKey').value.trim();
+  if(apiKey){
+    try{localStorage.setItem('ytseo_key',apiKey);$('keyStatus').style.display='inline'}catch(e){}
+  }
+
   let btn=$('analyzeBtn');
   btn.disabled=true;
   btn.innerHTML='<span class="spinner"></span> Fetching...';
   S.videoId=videoId;
-  S.tags=[];
-  S.fetchedTags=null;
-  S.oembed=null;
-  S.fullData=null;
-  S.dataSource='oembed';
+  S.tags=[]; S.fetchedTags=null; S.oembed=null; S.fullData=null; S.dataSource='oembed';
 
   try{
     let [oembed,thumbQual]=await Promise.all([
@@ -421,18 +414,72 @@ async function analyze(){
     S.oembed=oembed;
 
     let fullData=null;
-    try{fullData=await fetchInnerAPI(videoId)}catch(e){}
+    let usedAPI=false;
+
+    // Try Data API v3 first (CORS-friendly, needs key)
+    if(apiKey){
+      try{
+        let item=await fetchDataAPI(videoId,apiKey);
+        if(item){
+          let sn=item.snippet||{};
+          let st=item.statistics||{};
+          let cd=item.contentDetails||{};
+          fullData={
+            title:sn.title,
+            author:sn.channelTitle,
+            description:sn.description,
+            keywords:sn.tags||[],
+            viewCount:st.viewCount,
+            likeCount:st.likeCount,
+            commentCount:st.commentCount,
+            lengthSeconds:fmtIso(cd.duration),
+            duration:fmtIso(cd.duration),
+            category:sn.categoryId,
+            publishDate:sn.publishedAt,
+            publishedAt:sn.publishedAt,
+            subCount:null
+          };
+          S.dataSource='api';
+          usedAPI=true;
+          if(sn.tags&&sn.tags.length)S.fetchedTags=sn.tags;
+          toast('✅ Full data from YouTube API! Description, tags, views, likes, duration auto-detected.');
+        }
+      }catch(e){
+        toast('API key error: '+e.message);
+      }
+    }
+
+    // Fallback: try Inner API via proxy
+    if(!fullData){
+      try{
+        fd=await fetchInnerAPI(videoId);
+        if(fd){
+          let vd=fd.videoDetails||{};
+          let mf=fd.microformat?.playerMicroformatRenderer||{};
+          fullData={
+            title:vd.title,
+            author:vd.author,
+            description:vd.shortDescription||mf?.description?.simpleText||'',
+            keywords:vd.keywords||[],
+            viewCount:vd.viewCount,
+            likeCount:null,
+            commentCount:null,
+            lengthSeconds:vd.lengthSeconds,
+            duration:vd.lengthSeconds,
+            category:mf?.category,
+            publishDate:mf?.publishDate,
+            publishedAt:mf?.publishDate,
+            subCount:null
+          };
+          S.dataSource='inner';
+          if(vd.keywords&&vd.keywords.length)S.fetchedTags=vd.keywords;
+          if(!usedAPI)toast('Auto-detected: title, desc, tags, duration from Inner API.');
+        }
+      }catch(e){}
+    }
 
     if(fullData){
       S.fullData=fullData;
-      S.dataSource='full';
-      let vd=fullData.videoDetails||{};
-      let mf=fullData.microformat?.playerMicroformatRenderer||{};
-      let tags=vd.keywords||fullData.keywords||[];
-      if(tags.length)S.fetchedTags=tags;
-      toast('Full data loaded! Auto-detected title, description, tags, views, & more.');
-    }else{
-      toast('Basic data loaded. Add description/tags for deeper analysis.');
     }
 
     runFullAnalysis(videoId,thumbQual);
@@ -447,24 +494,23 @@ async function analyze(){
 
 function buildVideoData(videoId,thumbQual){
   let o=S.oembed,fd=S.fullData;
-  let vd=fd?.videoDetails||{};
-  let mf=fd?.microformat?.playerMicroformatRenderer||{};
   return {
-    title:vd.title||o?.title||'',
-    author:o?.author_name||vd.author||'Unknown',
+    title:fd?.title||o?.title||'',
+    author:o?.author_name||fd?.author||'Unknown',
     authorUrl:o?.author_url||'',
     thumbUrl:o?.thumbnail_url||`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
     thumbQual:thumbQual||'unknown',
-    description:(vd.shortDescription||mf?.description?.simpleText||'').trim(),
-    tags:vd.keywords||[],
-    viewCount:vd.viewCount||fd?.views||null,
+    description:(fd?.description||'').trim(),
+    tags:fd?.keywords||[],
+    viewCount:fd?.viewCount||fd?.views||null,
     likeCount:fd?.likeCount||fd?.likes||null,
     commentCount:fd?.commentCount||null,
-    lengthSeconds:vd.lengthSeconds||fd?.duration||null,
-    category:mf?.category||fd?.category||null,
-    publishDate:mf?.publishDate||vd.publishDate||fd?.uploadDate||fd?.publishedAt||null,
+    lengthSeconds:fd?.lengthSeconds||fd?.duration||null,
+    category:fd?.category||null,
+    publishDate:fd?.publishDate||fd?.uploadDate||fd?.publishedAt||null,
     subs:fd?.subCount||null,
-    hasFullData:!!fd
+    hasFullData:!!fd,
+    source:S.dataSource
   };
 }
 
@@ -502,9 +548,10 @@ function showResults(results,recs,vd,videoId){
 
   let tabKeys=['title','description','tags','thumbnail','channel','engagement','duration','published','category'];
   let tabLabels={title:'🎯 Title',description:'📝 Description',tags:'🏷️ Tags',thumbnail:'🖼️ Thumbnail',channel:'📺 Channel',engagement:'❤️ Engagement',duration:'⏱️ Duration',published:'📅 Published',category:'📂 Category'};
-
   let hasDesc=vd.description.length>0;
   let hasTags=vd.tags&&vd.tags.length>0;
+  let autoStr=vd.source==='api'?'✅ YouTube Data API v3':vd.source==='inner'?'⚙️ Inner API (proxy)':'🔗 oEmbed';
+  let noKey=vd.source==='oembed'&&!(hasDesc&&hasTags);
 
   $('mainResults').innerHTML=`
     <div class="results-section">
@@ -522,28 +569,36 @@ function showResults(results,recs,vd,videoId){
             <span class="meta-item">✅ ${passed} pass</span>
             <span class="meta-item">⚠️ ${warned} warnings</span>
             <span class="meta-item">❌ ${failed} fails</span>
+            <span class="meta-item" style="font-size:11px;color:var(--accent)">${autoStr}</span>
           </div>
         </div>
       </div>
-      ${!hasDesc||!hasTags?`
-      <div style="margin-top:12px;padding:10px;background:rgba(253,203,110,0.1);border:1px solid rgba(253,203,110,0.2);border-radius:var(--rs)">
-        <div style="font-size:12px;font-weight:600;margin-bottom:4px">✏️ Enhance Analysis</div>
-        <div style="font-size:11px;color:var(--text2);margin-bottom:8px">${!hasDesc?'Description not available. ':' '}${!hasTags?'Tags not available. ':''}Enter details below for a more complete analysis.</div>
+      ${noKey?`
+      <div class="warn-banner">
+        <span class="wb-icon">ℹ️</span>
+        <div class="wb-text">
+          <div class="wb-title">Manual input needed for description &amp; tags</div>
+          <div class="wb-body">Without a YouTube Data API key, description, tags, views, likes, and comments cannot be auto-detected due to browser CORS restrictions. <strong>Add a free API key above</strong> for full auto-detection, or enter details manually below.</div>
+        </div>
+      </div>
+      <div style="margin-top:8px">
         <div class="editor-form">
-          ${!hasDesc?`
           <div class="form-group">
             <label>Description <span class="manual-badge">manual</span></label>
             <textarea id="editDesc" rows="3" placeholder="Paste video description..." style="font-size:12px"></textarea>
-          </div>`:''}
-          ${!hasTags?`
+          </div>
           <div class="form-group">
             <label>Tags <span class="manual-badge">manual</span></label>
             <div class="tags-input" id="tagsContainer" onclick="document.getElementById('tagInput').focus()">
               <input class="tag-input-inner" id="tagInput" placeholder="Type tag, press Enter..." onkeydown="tagKeydown(event)">
             </div>
-          </div>`:''}
+          </div>
           <button class="btn-primary" style="font-size:12px;padding:8px 16px" onclick="reanalyze('${videoId}')">🔄 Re-analyze with input</button>
         </div>
+      </div>`:''}
+      ${!noKey&&(!hasDesc||!hasTags)?`
+      <div style="margin-top:8px;padding:8px 10px;background:rgba(0,184,148,0.08);border:1px solid rgba(0,184,148,0.15);border-radius:var(--rs);font-size:12px;color:var(--text2)">
+        ✅ All metadata auto-detected. You can still edit below for custom analysis.
       </div>`:''}
     </div>
 
@@ -563,7 +618,7 @@ function showResults(results,recs,vd,videoId){
 
     ${tabKeys.map((k,i)=>`
       <div class="tab-body${i===0?' show':''}" id="res-${k}">
-        <div class="source-badge">${k==='description'&&!hasDesc?'✏️ manual input':k==='tags'&&!hasTags?'✏️ manual input':S.dataSource==='full'?'🤖 auto-detected':'🔗 from oEmbed'}</div>
+        <div class="source-badge">${k==='description'&&!hasDesc?'✏️ manual input':k==='tags'&&!hasTags?'✏️ manual input':autoStr}</div>
         <div class="checks">
           ${(results[k]||[]).map(item=>`
             <div class="check">
@@ -642,7 +697,7 @@ function manualAnalyze(videoId){
   let allTags=[...S.tags];
   if(!title&&!desc&&!allTags.length){toast('Enter at least a title');return}
 
-  let vd={title,author:'Unknown',authorUrl:'',thumbUrl:`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,thumbQual:'unknown',description:desc,tags:allTags,viewCount:null,likeCount:null,commentCount:null,lengthSeconds:null,category:null,publishDate:null,subs:null,hasFullData:false};
+  let vd={title,author:'Unknown',authorUrl:'',thumbUrl:`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,thumbQual:'unknown',description:desc,tags:allTags,viewCount:null,likeCount:null,commentCount:null,lengthSeconds:null,category:null,publishDate:null,subs:null,hasFullData:false,source:'manual'};
   S.oembed={author_name:'Unknown',author_url:'',thumbnail_url:vd.thumbUrl,title};
 
   let results={
@@ -695,8 +750,17 @@ function renderTags(){
 }
 
 // Init
-document.addEventListener('DOMContentLoaded',()=>{document.documentElement.setAttribute('data-theme','')});
+document.addEventListener('DOMContentLoaded',()=>{
+  document.documentElement.setAttribute('data-theme','');
+  try{
+    let saved=localStorage.getItem('ytseo_key');
+    if(saved){$('apiKey').value=saved;$('keyStatus').style.display='inline'}
+  }catch(e){}
+});
 $('urlInput').addEventListener('keydown',e=>{if(e.key==='Enter')analyze()});
+$('apiKey').addEventListener('input',function(){
+  if(this.value.trim())try{localStorage.setItem('ytseo_key',this.value.trim());$('keyStatus').style.display='inline'}catch(e){}
+});
 </script>
 </body>
 </html>
