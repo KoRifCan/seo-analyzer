@@ -82,20 +82,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .toast{padding:8px 14px;border-radius:var(--rs);background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--gborder);color:var(--text);font-size:12px;animation:ti .3s ease,to .3s ease 3.7s forwards;box-shadow:0 8px 32px rgba(0,0,0,0.4);max-width:320px;pointer-events:all}
 @keyframes ti{from{opacity:0;transform:translateX(20px)}to{opacity:1}}
 @keyframes to{from{opacity:1}to{opacity:0;transform:translateX(20px)}}
-.tab-outer{position:relative;margin-bottom:12px}
-.tab-bar{display:flex;gap:4px;overflow-x:auto;padding:4px;background:var(--surface);border:1px solid var(--gborder);border-radius:var(--rs);scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth}
-.tab-bar::-webkit-scrollbar{display:none}
-.tab-btn{padding:8px 12px;border:none;border-radius:7px;background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap;transition:all var(--t);flex-shrink:0;font-family:var(--font)}
-.tab-btn:active{transform:scale(0.95)}
-.tab-btn:hover{color:var(--text);background:var(--shover)}
-.tab-btn.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;box-shadow:0 2px 12px var(--pglow)}
-.tab-scroll{position:absolute;top:0;bottom:0;width:28px;display:flex;align-items:center;justify-content:center;background:linear-gradient(to right,var(--bg),transparent);border:none;color:var(--text);cursor:pointer;opacity:0;transition:opacity var(--t);z-index:2}
-.tab-outer:hover .tab-scroll{opacity:1}
-.tab-scroll-l{left:0;background:linear-gradient(to right,var(--surface),transparent)}
-.tab-scroll-r{right:0;background:linear-gradient(to left,var(--surface),transparent)}
-.tab-body{display:none;animation:fadeIn .25s ease}
-.tab-body.show{display:block}
-.source-badge{font-size:10px;padding:2px 10px;border-radius:10px;background:var(--bg2);color:var(--text3);border:1px solid var(--gborder);display:inline-block;margin-bottom:8px;font-weight:500}
+.section-badge{font-size:10px;padding:2px 10px;border-radius:10px;background:var(--bg2);color:var(--text3);border:1px solid var(--gborder);display:inline-block;margin-bottom:8px;font-weight:500}
 .rec-card{padding:12px 14px;background:linear-gradient(135deg,rgba(108,92,231,0.06),rgba(0,206,201,0.06));border:1px solid var(--gborder);border-radius:var(--rs);margin-top:8px}
 .rec-card .rec-title{font-size:13px;font-weight:600;margin-bottom:3px}
 .rec-card .rec-body{font-size:12px;color:var(--text2);line-height:1.5}
@@ -138,7 +125,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   .vh-stats{padding:10px 14px;gap:8px}
   .gen-grid{grid-template-columns:1fr}
   .toast-container{left:12px;right:12px}
-  .tab-btn{padding:7px 10px;font-size:11px}
 }
 @media(max-width:480px){
   .hero h1{font-size:20px}
@@ -147,8 +133,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   .input-field{background:var(--surface);border:1px solid var(--gborder);border-radius:var(--rs);padding:12px 14px}
   .input-field:focus{border-color:var(--primary)}
   .btn-primary{padding:12px 20px;justify-content:center}
-  .tab-bar{padding:3px}
-  .tab-btn{padding:6px 9px;font-size:11px}
   .video-hero-img{min-height:140px}
   .video-hero-info h2{font-size:16px}
   .vh-stats{gap:6px}
@@ -548,8 +532,6 @@ function showResults(results,recs,vd,videoId){
   let score=total?Math.round(passed/total*100):0,grade=score>=80?'good':score>=50?'ok':'bad';
   let gradeText=score>=80?'Great SEO!':score>=50?'Needs Work':'Critical';
 
-  let tabKeys=['title','description','tags','thumbnail','generate','channel','engagement','duration','published','category'];
-  let tabLabels={title:'🎯 Title',description:'📝 Desc',tags:'🏷️ Tags',thumbnail:'🖼️ Thumb',generate:'✨ Generate','channel':'📺 Channel',engagement:'❤️ Engage',duration:'⏱️ Duration',published:'📅 Date',category:'📂 Category'};
   let hasDesc=vd.description.length>0,hasTags=vd.tags&&vd.tags.length>0;
   let autoStr=vd.source==='api'?'✅ YouTube Data API':vd.source==='inner'?'⚙️ Inner API':'🔗 oEmbed';
   let noKey=vd.source==='oembed'&&!(hasDesc&&hasTags);
@@ -594,38 +576,86 @@ function showResults(results,recs,vd,videoId){
       <div class="rec-list">${recs.map(r=>`<div class="rec-card"><div class="rec-title">${r.title}</div><div class="rec-body">${r.body}</div></div>`).join('')}</div>
     </div>
 
-    <div class="tab-outer fade-in">
-      <div class="tab-bar" id="tabBar">
-        ${tabKeys.map((k,i)=>`<button class="tab-btn${i===0?' active':''}" data-tab="res-${k}" onclick="switchTab('res-${k}')">${tabLabels[k]}</button>`).join('')}
+    <div class="card fade-in" id="sec-title">
+      <div class="section-title">🎯 Title <span class="st-badge">${autoStr}</span></div>
+      <div class="checks">${(results.title||[]).map(item=>`
+        <div class="check"><div class="check-icon ${item.i==='✅'?'pass':item.i==='❌'?'fail':'warn'}">${item.i}</div>
+        <div class="check-body"><div class="check-title">${item.t}</div>${item.d?`<div class="check-detail">${item.d}</div>`:''}${item.a?`<div class="check-action">💡 ${item.a}</div>`:''}</div></div>`).join('')}
       </div>
-      <button class="tab-scroll tab-scroll-l" onclick="scrollTab(-1)">‹</button>
-      <button class="tab-scroll tab-scroll-r" onclick="scrollTab(1)">›</button>
     </div>
 
-    ${tabKeys.map((k,i)=>{
-      if(k==='generate')return`
-      <div class="tab-body fade-in" id="res-generate">
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
-          <span style="font-size:12px;color:var(--text2)">🤖 Auto-generated SEO suggestions based on your video data.</span>
-          <button class="btn-ghost" style="margin-left:auto" onclick="generateSEO()">🔄 Regenerate</button>
-        </div>
-        <div id="genOutput"><div class="empty-state"><div class="empty-icon">⏳</div>Generating SEO content...</div></div>
-      </div>`;
-      return`
-      <div class="tab-body fade-in" id="res-${k}">
-        <div class="source-badge">${k==='description'&&!hasDesc?'✏️ manual':k==='tags'&&!hasTags?'✏️ manual':autoStr}</div>
-        <div class="checks">${(results[k]||[]).map(item=>`
-          <div class="check">
-            <div class="check-icon ${item.i==='✅'?'pass':item.i==='❌'?'fail':'warn'}">${item.i}</div>
-            <div class="check-body">
-              <div class="check-title">${item.t}</div>
-              ${item.d?`<div class="check-detail">${item.d}</div>`:''}
-              ${item.a?`<div class="check-action">💡 ${item.a}</div>`:''}
-            </div>
-          </div>`).join('')}
-        </div>
-      </div>`;
-    }).join('')}
+    <div class="card fade-in" id="sec-description">
+      <div class="section-title">📝 Description <span class="st-badge">${!hasDesc?'✏️ manual':autoStr}</span></div>
+      <div class="checks">${(results.description||[]).map(item=>`
+        <div class="check"><div class="check-icon ${item.i==='✅'?'pass':item.i==='❌'?'fail':'warn'}">${item.i}</div>
+        <div class="check-body"><div class="check-title">${item.t}</div>${item.d?`<div class="check-detail">${item.d}</div>`:''}${item.a?`<div class="check-action">💡 ${item.a}</div>`:''}</div></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card fade-in" id="sec-tags">
+      <div class="section-title">🏷️ Tags <span class="st-badge">${!hasTags?'✏️ manual':autoStr}</span></div>
+      <div class="checks">${(results.tags||[]).map(item=>`
+        <div class="check"><div class="check-icon ${item.i==='✅'?'pass':item.i==='❌'?'fail':'warn'}">${item.i}</div>
+        <div class="check-body"><div class="check-title">${item.t}</div>${item.d?`<div class="check-detail">${item.d}</div>`:''}${item.a?`<div class="check-action">💡 ${item.a}</div>`:''}</div></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card fade-in" id="sec-thumbnail">
+      <div class="section-title">🖼️ Thumbnail <span class="st-badge">${autoStr}</span></div>
+      <div class="checks">${(results.thumbnail||[]).map(item=>`
+        <div class="check"><div class="check-icon ${item.i==='✅'?'pass':item.i==='❌'?'fail':'warn'}">${item.i}</div>
+        <div class="check-body"><div class="check-title">${item.t}</div>${item.d?`<div class="check-detail">${item.d}</div>`:''}${item.a?`<div class="check-action">💡 ${item.a}</div>`:''}</div></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card fade-in" id="sec-generate">
+      <div class="section-title">✨ AI Generate <span class="st-badge">auto</span></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--text2)">🤖 Optimized title, description, tags, hashtags &amp; thumbnail text.</span>
+        <button class="btn-ghost" style="margin-left:auto" onclick="generateSEO()">🔄 Refresh</button>
+      </div>
+      <div id="genOutput"><div class="empty-state"><div class="empty-icon">⏳</div>Generating SEO suggestions...</div></div>
+    </div>
+
+    <div class="card fade-in" id="sec-channel">
+      <div class="section-title">📺 Channel <span class="st-badge">${autoStr}</span></div>
+      <div class="checks">${(results.channel||[]).map(item=>`
+        <div class="check"><div class="check-icon ${item.i==='✅'?'pass':item.i==='❌'?'fail':'warn'}">${item.i}</div>
+        <div class="check-body"><div class="check-title">${item.t}</div>${item.d?`<div class="check-detail">${item.d}</div>`:''}${item.a?`<div class="check-action">💡 ${item.a}</div>`:''}</div></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card fade-in" id="sec-engagement">
+      <div class="section-title">❤️ Engagement <span class="st-badge">${autoStr}</span></div>
+      <div class="checks">${(results.engagement||[]).map(item=>`
+        <div class="check"><div class="check-icon ${item.i==='✅'?'pass':item.i==='❌'?'fail':'warn'}">${item.i}</div>
+        <div class="check-body"><div class="check-title">${item.t}</div>${item.d?`<div class="check-detail">${item.d}</div>`:''}${item.a?`<div class="check-action">💡 ${item.a}</div>`:''}</div></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card fade-in" id="sec-duration">
+      <div class="section-title">⏱️ Duration <span class="st-badge">${autoStr}</span></div>
+      <div class="checks">${(results.duration||[]).map(item=>`
+        <div class="check"><div class="check-icon ${item.i==='✅'?'pass':item.i==='❌'?'fail':'warn'}">${item.i}</div>
+        <div class="check-body"><div class="check-title">${item.t}</div>${item.d?`<div class="check-detail">${item.d}</div>`:''}${item.a?`<div class="check-action">💡 ${item.a}</div>`:''}</div></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card fade-in" id="sec-published">
+      <div class="section-title">📅 Published <span class="st-badge">${autoStr}</span></div>
+      <div class="checks">${(results.published||[]).map(item=>`
+        <div class="check"><div class="check-icon ${item.i==='✅'?'pass':item.i==='❌'?'fail':'warn'}">${item.i}</div>
+        <div class="check-body"><div class="check-title">${item.t}</div>${item.d?`<div class="check-detail">${item.d}</div>`:''}${item.a?`<div class="check-action">💡 ${item.a}</div>`:''}</div></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card fade-in" id="sec-category">
+      <div class="section-title">📂 Category <span class="st-badge">${autoStr}</span></div>
+      <div class="checks">${(results.category||[]).map(item=>`
+        <div class="check"><div class="check-icon ${item.i==='✅'?'pass':item.i==='❌'?'fail':'warn'}">${item.i}</div>
+        <div class="check-body"><div class="check-title">${item.t}</div>${item.d?`<div class="check-detail">${item.d}</div>`:''}${item.a?`<div class="check-action">💡 ${item.a}</div>`:''}</div></div>`).join('')}
+      </div>
+    </div>
   `;
   $('content').scrollIntoView({behavior:'smooth',block:'start'});
   if($('genOutput'))setTimeout(()=>generateSEO(true),100);
@@ -715,27 +745,14 @@ function generateSEO(auto){
       </div>`).join('')}
     </div>
   `;
-  if(!auto)switchTab('res-generate');
-  if(!auto)toast('✅ SEO content generated!');
+  if(!auto){let el=$('sec-generate');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+  if(!auto)toast('✅ SEO content regenerated!');
 }
 
 function copyText(t){
   navigator.clipboard.writeText(t).then(()=>toast('📋 Copied!')).catch(()=>{
     let ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('📋 Copied!');
   });
-}
-
-function switchTab(id){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  qs(`.tab-btn[data-tab="${id}"]`)?.classList.add('active');
-  document.querySelectorAll('.tab-body').forEach(b=>b.classList.remove('show'));
-  $(id)?.classList.add('show');
-}
-
-function scrollTab(dir){
-  let bar=$('tabBar');if(!bar)return;
-  let amt=dir*120;
-  bar.scrollBy({left:amt,behavior:'smooth'});
 }
 
 // Tags
