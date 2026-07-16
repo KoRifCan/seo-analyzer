@@ -1093,27 +1093,27 @@ function renderGenCard(title, gen, source) {
       <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--text2)">🎯 Title Suggestions (${gen.titles.length})</div>
       ${gen.titles.map(s=>`
       <div class="gen-item" style="border:none;border-bottom:1px solid var(--gborder);border-radius:0;margin:0;padding:8px 0">
-        <span class="gen-copy" onclick="copyText('${esc(s.t)}')">📋 copy</span>
+        <span class="gen-copy" onclick="copyText('${jsStr(s.t)}')">📋 copy</span>
         <div class="gen-value" style="font-weight:600">${esc(s.t)}</div>
         <div class="gen-why">${s.w||'Optimized'}</div>
       </div>`).join('')}
       <div style="font-size:12px;font-weight:600;margin:10px 0 6px;color:var(--text2)">📝 Description</div>
       <div class="gen-item" style="border:none;border-radius:0;margin:0;padding:0 0 8px">
-        <span class="gen-copy" onclick="copyText(${JSON.stringify(gen.description)})">📋 copy</span>
+        <span class="gen-copy" onclick="copyText('${jsStr(gen.description)}')">📋 copy</span>
         <div style="white-space:pre-wrap;font-size:12px;line-height:1.6;margin-top:4px">${esc(gen.description)}</div>
       </div>
       <div class="gen-grid" style="margin-top:8px">
         <div>
           <div style="font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text2)">🏷️ Tags (${gen.tags.length})</div>
           <div class="gen-item" style="border:none;border-radius:0;margin:0;padding:0">
-            <span class="gen-copy" onclick="copyText('${esc(gen.tags.join(', '))}')">📋 copy</span>
+            <span class="gen-copy" onclick="copyText('${jsStr(gen.tags.join(', '))}')">📋 copy</span>
             <div class="gen-tags" style="margin-top:4px">${gen.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div>
           </div>
         </div>
         <div>
           <div style="font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text2)">#️⃣ Hashtags</div>
           <div class="gen-item" style="border:none;border-radius:0;margin:0;padding:0">
-            <span class="gen-copy" onclick="copyText('${esc(gen.hashtags.join(' '))}')">📋 copy</span>
+            <span class="gen-copy" onclick="copyText('${jsStr(gen.hashtags.join(' '))}')">📋 copy</span>
             <div style="margin-top:4px">${esc(gen.hashtags.join(' '))}</div>
           </div>
         </div>
@@ -1122,7 +1122,7 @@ function renderGenCard(title, gen, source) {
       ${gen.thumbText.map(s=>`
       <div class="gen-item" style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:none;border-radius:0;margin:0;padding:6px 0">
         <div style="font-size:14px;font-weight:700">${esc(s.t)}</div>
-        <button class="btn-ghost" style="flex-shrink:0;padding:4px 10px;font-size:11px" onclick="copyText('${esc(s.t)}')">📋</button>
+        <button class="btn-ghost" style="flex-shrink:0;padding:4px 10px;font-size:11px" onclick="copyText('${jsStr(s.t)}')">📋</button>
       </div>`).join('')}
       ${gen.thumbnailPrompt ? `
       <div style="font-size:12px;font-weight:600;margin:10px 0 6px;color:var(--text2)">🎨 Thumbnail AI Prompt</div>
