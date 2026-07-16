@@ -744,7 +744,7 @@ The titles must be 3 options. Description must be complete (200+ chars ready to 
     S.aiCopyData = copyData; // cache for AI Generate
     $('aiOutput').innerHTML = renderAIAnalysis(sections, score) + renderAICopyReady(copyData);
     // Also update AI Generate section if it exists
-    if ($('genOutput')) generateSEO('ai', false);
+    if ($('genOutput')) generateSEO(false);
     toast('🤖 AI analysis complete!');
   } catch (e) {
     let msg = esc(e.message);
@@ -967,13 +967,12 @@ function showResults(results,recs,vd,videoId){
     </div>
 
     <div class="card fade-in" id="sec-generate">
-      <div class="section-title">✨ AI Generate <span class="st-badge" id="genBadge">auto</span></div>
+      <div class="section-title">✨ Generate SEO</div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
-        <span style="font-size:12px;color:var(--text2)">Choose generator mode:</span>
-        <button class="btn-ghost" onclick="generateSEO('ai',true)">🤖 AI Generate</button>
-        <button class="btn-ghost" onclick="generateSEO('rule',true)">⚙️ Rule Generate</button>
+        <span style="font-size:12px;color:var(--text2)">AI + Rule generated content</span>
+        <button class="btn-ghost" style="margin-left:auto" onclick="generateSEO(true)">🔄 Generate</button>
       </div>
-      <div id="genOutput"><div class="empty-state"><div class="empty-icon">🤖</div>Click "AI Generate" or "Rule Generate" above</div></div>
+      <div id="genOutput"><div class="empty-state"><div class="empty-icon">🤖</div>Click "Generate" or run AI Analysis</div></div>
     </div>
 
     <div class="card fade-in" id="sec-channel">
@@ -1017,7 +1016,7 @@ function showResults(results,recs,vd,videoId){
     </div>
   `;
   $('content').scrollIntoView({behavior:'smooth',block:'start'});
-  if($('genOutput')&&S.aiCopyData)setTimeout(()=>generateSEO(true),100);
+  if($('genOutput')&&S.aiCopyData)setTimeout(()=>generateSEO(false),100);
 }
 
 function reanalyze(videoId){
@@ -1064,102 +1063,91 @@ function normalizeAIData(d) {
   };
 }
 
-async function generateSEO(mode, scroll){
-  if (mode==='refresh') { S.aiCopyData = null; mode = 'ai'; }
-  let vd=buildVideoData(S.videoId,'maxresdefault');
-  if(!vd.title){if(mode)toast('Need a title to generate');return}
-  let gen = null; let source = 'rule';
-  // Rule mode — direct, no cache
-  if (mode==='rule') {
-    gen = generateSEOCopy(vd);
-    source = 'rule';
-  }
-  // AI mode — cache first, then fresh API call
-  if (mode==='ai' || mode===true) {
-    if (S.aiCopyData) {
-      gen = normalizeAIData(S.aiCopyData);
-      source = 'AI';
-    } else {
-      $('genOutput').innerHTML=`<div class="empty-state"><div class="empty-icon">⏳</div>AI generating content...</div>`;
-      try {
-        let r = await callGemini(
-          `Generate YouTube SEO JSON for: Title="${(vd.title||'').replace(/"/g,'\\"')}" Description="${(vd.description||'').replace(/"/g,'\\"').substring(0,300)}" Tags=${JSON.stringify(vd.tags||[])}. Return ONLY raw JSON: {"titles":[{"text":"...","reason":"..."}],"description":"...","tags":[],"hashtags":[],"thumbnailText":[],"thumbnailPrompt":"..."}. titles=3, description=200+ chars, tags=10-15, hashtags=3-5, thumbnailText=3. No markdown.`,
-          $('aiApiKey').value.trim()||DEFAULT_AI_KEY
-        );
-        if (r && r.text) {
-          let j = r.text; let s=j.indexOf('{'), e=j.lastIndexOf('}');
-          if (s>=0&&e>s) j=j.substring(s,e+1);
-          let d = JSON.parse(j);
-          if (d.titles && d.description) { gen = normalizeAIData(d); source = 'AI'; S.aiCopyData = d; }
-        }
-      } catch(e) {}
-    }
-  }
-  // Fallback if both modes failed
-  if (!gen) { gen = generateSEOCopy(vd); source = 'rule'; }
-  if (!gen) { $('genOutput').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div>Could not generate content.</div>`; return; }
-
-  let badge=$('genBadge'); if(badge)badge.textContent=source;
-  $('genOutput').innerHTML=`
-    <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--gborder)">
-        <div class="section-title" style="margin-bottom:0">🎯 Title Suggestions (${gen.titles.length}) <span class="st-badge">${source}</span></div>
-      </div>
+function renderGenCard(title, gen, source) {
+  if (!gen || !gen.titles) return '';
+  return `<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;border:1px solid ${source==='AI'?'var(--accent)':'var(--gborder)'}">
+    <div style="padding:8px 14px;border-bottom:1px solid var(--gborder);background:var(--gbg2);display:flex;align-items:center;gap:8px">
+      <span class="st-badge" style="background:${source==='AI'?'var(--accent)':'var(--text2)'};color:#fff">${source}</span>
+      <span style="font-weight:600;font-size:13px">${title}</span>
+    </div>
+    <div style="padding:12px 14px">
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--text2)">🎯 Title Suggestions (${gen.titles.length})</div>
       ${gen.titles.map(s=>`
-      <div class="gen-item" style="border:none;border-bottom:1px solid var(--gborder);border-radius:0;margin:0">
+      <div class="gen-item" style="border:none;border-bottom:1px solid var(--gborder);border-radius:0;margin:0;padding:8px 0">
         <span class="gen-copy" onclick="copyText('${esc(s.t)}')">📋 copy</span>
         <div class="gen-value" style="font-weight:600">${esc(s.t)}</div>
-        <div class="gen-why">${s.w||'Optimized title'}</div>
+        <div class="gen-why">${s.w||'Optimized'}</div>
       </div>`).join('')}
-    </div>
-    <div class="card" style="margin-bottom:10px">
-      <div class="section-title" style="margin-bottom:6px">📝 Description Template</div>
-      <div class="gen-item">
+      <div style="font-size:12px;font-weight:600;margin:10px 0 6px;color:var(--text2)">📝 Description</div>
+      <div class="gen-item" style="border:none;border-radius:0;margin:0;padding:0 0 8px">
         <span class="gen-copy" onclick="copyText(${JSON.stringify(gen.description)})">📋 copy</span>
-        <div class="gen-value" style="white-space:pre-wrap;font-size:12px;line-height:1.6">${esc(gen.description)}</div>
+        <div style="white-space:pre-wrap;font-size:12px;line-height:1.6;margin-top:4px">${esc(gen.description)}</div>
       </div>
-    </div>
-    <div class="gen-grid">
-      <div class="card" style="margin-bottom:0">
-        <div class="section-title" style="margin-bottom:6px">🏷️ Tags (${gen.tags.length})</div>
-        <div class="gen-item">
-          <span class="gen-copy" onclick="copyText('${esc(gen.tags.join(', '))}')">📋 copy</span>
-          <div class="gen-tags">${gen.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div>
-        </div>
-      </div>
-      <div class="card" style="margin-bottom:0">
-        <div class="section-title" style="margin-bottom:6px">#️⃣ Hashtags</div>
-        <div class="gen-item">
-          <span class="gen-copy" onclick="copyText('${esc(gen.hashtags.join(' '))}')">📋 copy</span>
-          <div class="gen-value">${esc(gen.hashtags.join(' '))}</div>
-        </div>
-      </div>
-    </div>
-    <div class="card" style="margin-top:10px;margin-bottom:0">
-      <div class="section-title" style="margin-bottom:6px">🖼️ Thumbnail Text</div>
-      ${gen.thumbText.map(s=>`
-      <div class="gen-item" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div class="gen-grid" style="margin-top:8px">
         <div>
-          <div class="gen-label">Option</div>
-          <div class="gen-value" style="font-size:16px;font-weight:700">${esc(s.t)}</div>
+          <div style="font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text2)">🏷️ Tags (${gen.tags.length})</div>
+          <div class="gen-item" style="border:none;border-radius:0;margin:0;padding:0">
+            <span class="gen-copy" onclick="copyText('${esc(gen.tags.join(', '))}')">📋 copy</span>
+            <div class="gen-tags" style="margin-top:4px">${gen.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div>
+          </div>
         </div>
-        <div style="flex:1;min-width:0">
-          <div class="gen-why">${s.w||'Suggestion'}</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text2)">#️⃣ Hashtags</div>
+          <div class="gen-item" style="border:none;border-radius:0;margin:0;padding:0">
+            <span class="gen-copy" onclick="copyText('${esc(gen.hashtags.join(' '))}')">📋 copy</span>
+            <div style="margin-top:4px">${esc(gen.hashtags.join(' '))}</div>
+          </div>
         </div>
+      </div>
+      <div style="font-size:12px;font-weight:600;margin:10px 0 6px;color:var(--text2)">🖼️ Thumbnail Text</div>
+      ${gen.thumbText.map(s=>`
+      <div class="gen-item" style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:none;border-radius:0;margin:0;padding:6px 0">
+        <div style="font-size:14px;font-weight:700">${esc(s.t)}</div>
         <button class="btn-ghost" style="flex-shrink:0;padding:4px 10px;font-size:11px" onclick="copyText('${esc(s.t)}')">📋</button>
       </div>`).join('')}
+      ${gen.thumbnailPrompt ? `
+      <div style="font-size:12px;font-weight:600;margin:10px 0 6px;color:var(--text2)">🎨 Thumbnail AI Prompt</div>
+      <div style="font-size:12px;line-height:1.6;color:var(--text1)">${esc(gen.thumbnailPrompt)} <button class="btn-ghost" style="padding:2px 6px;font-size:10px;vertical-align:middle" onclick="copyText('${jsStr(gen.thumbnailPrompt)}')">📋</button></div>` : ''}
     </div>
-    ${gen.thumbnailPrompt ? `
-    <div class="card" style="margin-top:10px;margin-bottom:0">
-      <div class="section-title" style="margin-bottom:6px">🎨 Thumbnail AI Prompt</div>
-      <div class="gen-item" style="display:flex;align-items:flex-start;gap:8px">
-        <div class="gen-value" style="font-size:12px;line-height:1.6;flex:1">${esc(gen.thumbnailPrompt)}</div>
-        <button class="btn-ghost" style="flex-shrink:0;padding:3px 8px;font-size:10px" onclick="copyText('${jsStr(gen.thumbnailPrompt)}')">📋</button>
-      </div>
-    </div>` : ''}
-  `;
+  </div>`;
+}
+
+async function generateSEO(scroll){
+  let vd=buildVideoData(S.videoId,'maxresdefault');
+  if(!vd.title){toast('Need a title to generate');return}
+
+  let output='<div style="display:flex;flex-direction:column;gap:10px">';
+
+  // Generate AI content
+  let aiGen = null;
+  if (S.aiCopyData) {
+    aiGen = normalizeAIData(S.aiCopyData);
+  } else {
+    $('genOutput').innerHTML=`<div class="empty-state"><div class="empty-icon">⏳</div>Generating AI + Rule content...</div>`;
+    try {
+      let r = await callGemini(
+        `Generate YouTube SEO JSON for: Title="${(vd.title||'').replace(/"/g,'\\"')}" Description="${(vd.description||'').replace(/"/g,'\\"').substring(0,300)}" Tags=${JSON.stringify(vd.tags||[])}. Return ONLY raw JSON: {"titles":[{"text":"...","reason":"..."}],"description":"...","tags":[],"hashtags":[],"thumbnailText":[],"thumbnailPrompt":"..."}. titles=3, description=200+ chars, tags=10-15, hashtags=3-5, thumbnailText=3. No markdown.`,
+        $('aiApiKey').value.trim()||DEFAULT_AI_KEY
+      );
+      if (r && r.text) {
+        let j = r.text; let s=j.indexOf('{'), e=j.lastIndexOf('}');
+        if (s>=0&&e>s) j=j.substring(s,e+1);
+        let d = JSON.parse(j);
+        if (d.titles && d.description) { aiGen = normalizeAIData(d); S.aiCopyData = d; }
+      }
+    } catch(e) {}
+  }
+  output += aiGen ? renderGenCard('🤖 AI Generated', aiGen, 'AI') : '';
+
+  // Generate rule content
+  let ruleGen = generateSEOCopy(vd);
+  output += ruleGen ? renderGenCard('⚙️ Rule Generated', ruleGen, 'rule') : '';
+
+  output += '</div>';
+  $('genOutput').innerHTML = output || '<div class="empty-state"><div class="empty-icon">⚠️</div>Could not generate content.</div>';
+
   if(scroll){let el=$('sec-generate');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
-  if(scroll)toast((source==='AI'?'🤖':'⚙️')+' SEO content generated!');
+  if(scroll)toast('✨ SEO content generated!');
 }
 
 function copyText(t){
