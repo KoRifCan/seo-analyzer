@@ -1201,7 +1201,7 @@ function renderFullMetadata(v,ch){
   let rows=[];
   rows.push({label:'Video ID',value:v.id});
   rows.push({label:'Title',value:s.title||'-'});
-  rows.push({label:'Description',value:s.description?s.description.substring(0,600)+(s.description.length>600?'...':''):'(empty)'});
+  rows.push({label:'Description',value:s.description||'(empty)'});
   rows.push({label:'Published',value:s.publishedAt?new Date(s.publishedAt).toLocaleString():'-'});
   rows.push({label:'Channel',value:s.channelTitle||'-'});
   rows.push({label:'Channel ID',value:s.channelId||'-'});
@@ -1233,7 +1233,7 @@ function renderFullMetadata(v,ch){
     rows.push({label:'',value:'',divider:true});
     rows.push({label:'── CHANNEL ──',value:'',divider:true});
     rows.push({label:'Title',value:cs.title||'-'});
-    rows.push({label:'Description',value:cs.description?cs.description.substring(0,300)+(cs.description.length>300?'...':''):'-'});
+    rows.push({label:'Description',value:cs.description||'-'});
     rows.push({label:'Custom URL',value:cs.customUrl||'-'});
     rows.push({label:'Published',value:cs.publishedAt?new Date(cs.publishedAt).toLocaleString():'-'});
     rows.push({label:'Country',value:cs.country||'-'});
