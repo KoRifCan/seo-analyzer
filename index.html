@@ -635,9 +635,9 @@ function renderAICopyReady(jsonData) {
 }
 
 async function generateAIAnalysis(vd) {
-  const aiKey = $('aiApiKey').value.trim();
+  const aiKey = $('aiApiKey').value.trim() || DEFAULT_AI_KEY;
   if (!aiKey) {
-    $('aiOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">🤖</div>Add your free Gemini API key above for AI-powered SEO insights<br><span style="font-size:12px;color:var(--text3)">Get one at aistudio.google.com/apikey</span></div>`;
+    $('aiOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">🤖</div>Add a Gemini API key for AI-powered SEO insights<br><span style="font-size:12px;color:var(--text3)">Get one at aistudio.google.com/apikey</span></div>`;
     return;
   }
   $('aiOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">⏳</div><div>AI analyzing your video...</div><span class="spinner" style="margin:8px auto 0"></span></div>`;
@@ -737,7 +737,7 @@ async function generateAiThumbnail(prompt) {
   const area = $('thumbGenArea');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Generating...';
-  const apiKey = $('aiApiKey').value.trim();
+  const apiKey = $('aiApiKey').value.trim() || DEFAULT_AI_KEY;
   if (!apiKey) { btn.disabled = false; btn.innerHTML = '✨ Generate Image'; toast('Enter AI key first'); return; }
   // Try Imagen 4 Fast Generate
   const models = ['imagen-4.0-fast-generate-001','imagen-4-fast-generate-001','imagen-4.0-generate-001','imagen-4-generate-001','imagen-4.0-ultra-generate-001','imagen-4-ultra-generate-001'];
@@ -783,8 +783,8 @@ async function analyze(){
   let videoId=extractId(url);
   if(!videoId){toast('Invalid YouTube URL');return}
 
-  let apiKey=$('apiKey').value.trim();
-  if(apiKey){try{localStorage.setItem('ytseo_key',apiKey);$('keyStatus').style.display='inline'}catch(e){}}
+  let apiKey=$('apiKey').value.trim()||DEFAULT_YT_KEY;
+  if($('apiKey').value.trim()){try{localStorage.setItem('ytseo_key',$('apiKey').value.trim());$('keyStatus').style.display='inline';$('keyStatus').textContent='✅ saved'}catch(e){}}
 
   let btn=$('analyzeBtn');
   btn.disabled=true;
@@ -895,7 +895,7 @@ function showResults(results,recs,vd,videoId){
 
     <div class="card fade-in" id="sec-ai">
       <div class="section-title">🤖 AI Analysis <span class="st-badge">Gemini</span></div>
-      <div id="aiOutput">${$('aiApiKey')?.value?.trim() ? '<div class="empty-state"><div class="empty-icon">⏳</div>Generating AI insights...</div>' : '<div class="empty-state"><div class="empty-icon">🤖</div>Add your free Gemini API key above for AI-powered SEO insights<br><span style="font-size:12px;color:var(--text3)">Get one at aistudio.google.com/apikey</span></div>'}</div>
+      <div id="aiOutput"><div class="empty-state"><div class="empty-icon">⏳</div>Generating AI insights...</div></div>
     </div>
 
     <div class="card fade-in" id="sec-title">
@@ -1093,10 +1093,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   try{
     let savedKey=localStorage.getItem('ytseo_key');
     if(savedKey){$('apiKey').value=savedKey;$('keyStatus').style.display='inline';$('keyStatus').textContent='✅ saved'}
-    else{$('apiKey').value=DEFAULT_YT_KEY;$('keyStatus').style.display='inline';$('keyStatus').textContent='🔑 default'}
+    else{$('apiKey').value='';$('keyStatus').style.display='inline';$('keyStatus').textContent='🔑 default'}
     let savedAI=localStorage.getItem('ytseo_aikey');
     if(savedAI){$('aiApiKey').value=savedAI;$('aiKeyStatus').style.display='inline';$('aiKeyStatus').textContent='✅ saved'}
-    else{$('aiApiKey').value=DEFAULT_AI_KEY;$('aiKeyStatus').style.display='inline';$('aiKeyStatus').textContent='🤖 default'}
+    else{$('aiApiKey').value='';$('aiKeyStatus').style.display='inline';$('aiKeyStatus').textContent='🤖 default'}
     let savedTheme=localStorage.getItem('ytseo_theme');if(savedTheme==='light'){S.theme='light';document.documentElement.setAttribute('data-theme','light');$('themeBtn').textContent='☀️'}
   }catch(e){}
   document.documentElement.setAttribute('data-theme',S.theme==='dark'?'':'light');
