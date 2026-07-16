@@ -474,16 +474,27 @@ function generateThumbnailText(vd){
 
 // =============== AI ANALYSIS ===============
 
-async function callGemini(prompt, apiKey) {
+async function callGemini(prompt, apiKey, retries=2) {
   if (!apiKey) return null;
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-    signal: AbortSignal.timeout(60000)
-  });
-  if (!r.ok) { let e = await r.json().catch(()=>({})); throw new Error(e?.error?.message || 'Gemini API error'); }
-  const d = await r.json();
-  return d?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  for (let attempt=0; attempt<=retries; attempt++) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        signal: AbortSignal.timeout(120000)
+      });
+      if (!r.ok) { let e = await r.json().catch(()=>({})); throw new Error(e?.error?.message || 'Gemini API error'); }
+      const d = await r.json();
+      return d?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    } catch(e) {
+      if (attempt < retries && (e.name==='AbortError'||e.message.includes('timed out'))) {
+        await new Promise(r=>setTimeout(r,2000));
+        continue;
+      }
+      throw e;
+    }
+  }
+  return null;
 }
 
 function parseAISections(text) {
@@ -685,7 +696,7 @@ async function generateAiThumbnail(prompt) {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${apiKey}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ instances: [{ prompt }], parameters: { sampleCount: 1 } }),
-        signal: AbortSignal.timeout(60000)
+        signal: AbortSignal.timeout(120000)
       });
       if (!r.ok) continue;
       const d = await r.json();
