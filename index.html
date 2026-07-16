@@ -209,7 +209,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <div class="toast-container" id="toast"></div>
 
 <script>
-const S={theme:'dark',videoId:null,oembed:null,fullData:null,dataSource:'oembed',tags:[],fetchedTags:null};
+const S={theme:'dark',videoId:null,oembed:null,fullData:null,dataSource:'oembed',tags:[],fetchedTags:null,aiCopyData:null};
 function $(id){return document.getElementById(id)}
 function qs(s){return document.querySelector(s)}
 function toast(m){let c=$('toast'),t=document.createElement('div');t.className='toast';t.textContent=m;c.appendChild(t);setTimeout(()=>t.remove(),4000)}
@@ -741,7 +741,10 @@ The titles must be 3 options. Description must be complete (200+ chars ready to 
     }
     let score = null;
     if (sections.length > 0) { const m = sections[0].content.match(/Score\s*[:：]?\s*(\d+)\s*\/\s*100/i); if (m) score = parseInt(m[1]); }
+    S.aiCopyData = copyData; // cache for AI Generate
     $('aiOutput').innerHTML = renderAIAnalysis(sections, score) + renderAICopyReady(copyData);
+    // Also update AI Generate section if it exists
+    if ($('genOutput')) generateSEO(true);
     toast('🤖 AI analysis complete!');
   } catch (e) {
     let msg = esc(e.message);
@@ -967,9 +970,9 @@ function showResults(results,recs,vd,videoId){
       <div class="section-title">✨ AI Generate <span class="st-badge">auto</span></div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
         <span style="font-size:12px;color:var(--text2)">🤖 Optimized title, description, tags, hashtags &amp; thumbnail text.</span>
-        <button class="btn-ghost" style="margin-left:auto" onclick="generateSEO()">🔄 Refresh</button>
+        <button class="btn-ghost" style="margin-left:auto" onclick="generateSEO('refresh')">🔄 Refresh</button>
       </div>
-      <div id="genOutput"><div class="empty-state"><div class="empty-icon">⏳</div>Generating SEO suggestions...</div></div>
+      <div id="genOutput"><div class="empty-state"><div class="empty-icon">🤖</div>Run AI Analysis to get optimized SEO content</div></div>
     </div>
 
     <div class="card fade-in" id="sec-channel">
@@ -1013,7 +1016,7 @@ function showResults(results,recs,vd,videoId){
     </div>
   `;
   $('content').scrollIntoView({behavior:'smooth',block:'start'});
-  if($('genOutput'))setTimeout(()=>generateSEO(true),100);
+  if($('genOutput')&&S.aiCopyData)setTimeout(()=>generateSEO(true),100);
 }
 
 function reanalyze(videoId){
@@ -1048,20 +1051,49 @@ function manualAnalyze(videoId){
   setTimeout(()=>generateAIAnalysis(vd),200);
 }
 
+function normalizeAIData(d) {
+  if (!d) return null;
+  return {
+    titles: (d.titles||[]).map(t => ({ t: t.text||t, w: t.reason||'AI optimized title' })),
+    description: d.description||'',
+    tags: d.tags||[],
+    hashtags: d.hashtags||[],
+    thumbText: (d.thumbnailText||[]).map(t => ({ t, w: 'AI generated thumbnail text' })),
+    thumbnailPrompt: d.thumbnailPrompt||''
+  };
+}
+
 async function generateSEO(auto){
+  if (auto==='refresh') { S.aiCopyData = null; auto = false; }
   let vd=buildVideoData(S.videoId,'maxresdefault');
   if(!vd.title){if(!auto)toast('Need a title to generate');return}
-  let gen;
-  // Try AI first
-  if (auto) $('genOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">⏳</div>AI generating SEO content...</div>`;
-  try { gen = await generateAISEO(vd); } catch(e) {}
-  if (!gen) gen = generateSEOCopy(vd);
-  if (!gen) { $('genOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Could not generate SEO content.</div>`; return; }
-  let isAI = gen.titles && gen.titles[0] && gen.titles[0].w && gen.titles[0].w !== '';
+  let gen = null; let source = 'rule';
+  // 1. Try cached AI data
+  if (S.aiCopyData) { gen = normalizeAIData(S.aiCopyData); source = 'AI'; }
+  // 2. If no cache, try fresh AI call
+  if (!gen) {
+    if (auto) $('genOutput').innerHTML=`<div class="empty-state"><div class="empty-icon">⏳</div>AI generating SEO content...</div>`;
+    try {
+      let r = await callGemini(
+        `Generate YouTube SEO JSON for: Title="${(vd.title||'').replace(/"/g,'\\"')}" Description="${(vd.description||'').replace(/"/g,'\\"').substring(0,300)}" Tags=${JSON.stringify(vd.tags||[])}. Return ONLY raw JSON: {"titles":[{"text":"...","reason":"..."}],"description":"...","tags":[],"hashtags":[],"thumbnailText":[],"thumbnailPrompt":"..."}. titles=3, description=200+ chars, tags=10-15, hashtags=3-5, thumbnailText=3. No markdown.`,
+        $('aiApiKey').value.trim()||DEFAULT_AI_KEY
+      );
+      if (r && r.text) {
+        let j = r.text; let s=j.indexOf('{'), e=j.lastIndexOf('}');
+        if (s>=0&&e>s) j=j.substring(s,e+1);
+        let d = JSON.parse(j);
+        if (d.titles && d.description) { gen = normalizeAIData(d); source = 'AI'; S.aiCopyData = d; }
+      }
+    } catch(e) {}
+  }
+  // 3. Last resort: rule-based
+  if (!gen) { gen = generateSEOCopy(vd); source = 'rule'; }
+  if (!gen) { $('genOutput').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div>Could not generate content.</div>`; return; }
+
   $('genOutput').innerHTML=`
     <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">
       <div style="padding:12px 14px;border-bottom:1px solid var(--gborder)">
-        <div class="section-title" style="margin-bottom:0">🎯 Title Suggestions (${gen.titles.length}) <span class="st-badge">${isAI?'AI':'rule'}</span></div>
+        <div class="section-title" style="margin-bottom:0">🎯 Title Suggestions (${gen.titles.length}) <span class="st-badge">${source}</span></div>
       </div>
       ${gen.titles.map(s=>`
       <div class="gen-item" style="border:none;border-bottom:1px solid var(--gborder);border-radius:0;margin:0">
@@ -1102,7 +1134,7 @@ async function generateSEO(auto){
           <div class="gen-value" style="font-size:16px;font-weight:700">${esc(s.t)}</div>
         </div>
         <div style="flex:1;min-width:0">
-          <div class="gen-why">${s.w||'AI suggestion'}</div>
+          <div class="gen-why">${s.w||'Suggestion'}</div>
         </div>
         <button class="btn-ghost" style="flex-shrink:0;padding:4px 10px;font-size:11px" onclick="copyText('${esc(s.t)}')">📋</button>
       </div>`).join('')}
@@ -1117,7 +1149,7 @@ async function generateSEO(auto){
     </div>` : ''}
   `;
   if(!auto){let el=$('sec-generate');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
-  if(!auto)toast((isAI?'🤖':'✅')+' SEO content regenerated!');
+  if(!auto)toast((source==='AI'?'🤖':'✅')+' SEO content regenerated!');
 }
 
 function copyText(t){
