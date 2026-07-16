@@ -476,7 +476,14 @@ function generateThumbnailText(vd){
 
 async function callGemini(prompt, apiKey, retries=1) {
   if (!apiKey) return null;
-  const models = ['gemini-3.5-flash','gemini-3.0-flash','gemini-3-flash','gemini-3.1-flash-lite','gemini-2.5-flash','gemini-2.5-flash-lite'];
+  const models = [
+    'gemini-3.5-flash','gemini-3.0-flash','gemini-3-flash',
+    'gemini-3.1-flash-lite','gemini-2.5-flash','gemini-2.5-flash-lite',
+    'gemma-4-26b-it','gemma-4-31b-it',
+    'antigravity',
+    'gemini-robotics-er-1-5-preview','gemini-robotics-er-1-6-preview',
+    'gemini-2.5-flash-tts','gemini-3.1-flash-tts'
+  ];
   let lastErr = null;
   for (const model of models) {
     for (let attempt=0; attempt<=retries; attempt++) {
@@ -489,14 +496,14 @@ async function callGemini(prompt, apiKey, retries=1) {
         if (!r.ok) {
           let e = await r.json().catch(()=>({}));
           let msg = e?.error?.message || '';
-          if (r.status===404||r.status===403||r.status===429||/quota|not available|not found|disabled|permission|denied/i.test(msg)) {
+          if (r.status===404||r.status===403||r.status===429||r.status===400&&/not found|unavailable/i.test(msg)||/quota|not available|not found|disabled|permission|denied/i.test(msg)) {
             lastErr = new Error(msg || `Model ${model} unavailable`);
             break;
           }
-          throw new Error(msg || 'Gemini API error');
+          throw new Error(msg || 'API error');
         }
         const d = await r.json();
-        return d?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+        if (d?.candidates?.[0]?.content?.parts?.[0]?.text) return d.candidates[0].content.parts[0].text;
       } catch(e) {
         lastErr = e;
         if ((e.name==='AbortError'||e.message.includes('timed out')) && attempt < retries) {
@@ -507,7 +514,7 @@ async function callGemini(prompt, apiKey, retries=1) {
       }
     }
   }
-  throw lastErr || new Error('All Gemini models failed');
+  throw lastErr || new Error('All AI models failed');
 }
 
 function parseAISections(text) {
@@ -702,7 +709,7 @@ async function generateAiThumbnail(prompt) {
   const apiKey = $('aiApiKey').value.trim();
   if (!apiKey) { btn.disabled = false; btn.innerHTML = '✨ Generate Image'; toast('Enter AI key first'); return; }
   // Try Imagen 4 Fast Generate
-  const models = ['imagen-4.0-fast-generate-001', 'imagen-4.0-generate-001', 'imagen-4.0-ultra-generate-001'];
+  const models = ['imagen-4.0-fast-generate-001','imagen-4-fast-generate-001','imagen-4.0-generate-001','imagen-4-generate-001','imagen-4.0-ultra-generate-001','imagen-4-ultra-generate-001'];
   let imgBase64 = null;
   for (const model of models) {
     try {
