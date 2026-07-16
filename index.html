@@ -1243,7 +1243,12 @@ function renderFullMetadata(v,ch){
     add('Subscribers',cst.hiddenSubscriberCount?'Hidden':cst.subscriberCount?parseInt(cst.subscriberCount).toLocaleString():'0');
     add('Total Videos',cst.videoCount?parseInt(cst.videoCount).toLocaleString():'0');
     add('Total Channel Views',cst.viewCount?parseInt(cst.viewCount).toLocaleString():'0');
-    if(cb.channel?.keywords)add('Channel Keywords',cb.channel.keywords.split(/\s+/).join(', '));
+    if(cb.channel?.keywords){
+      let kw=cb.channel.keywords;
+      // Try comma-separated; fallback to space-separated
+      kw=kw.includes(',')?kw.split(',').map(s=>s.trim()).join(', '):kw;
+      add('Channel Keywords',kw);
+    }
     if(cb.channel?.defaultTab)add('Default Tab',cb.channel.defaultTab);
     if(cb.channel?.showBrowseView)add('Show Browse View',String(cb.channel.showBrowseView));
     if(cb.channel?.moderateComments)add('Moderate Comments',String(cb.channel.moderateComments));
