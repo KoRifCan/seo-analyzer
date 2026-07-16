@@ -89,6 +89,17 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .auto-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(0,184,148,0.12);color:var(--success)}
 .manual-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(253,203,110,0.12);color:var(--warn)}
 .warn-banner{font-size:12px;padding:10px 14px;background:rgba(253,203,110,0.1);border:1px solid rgba(253,203,110,0.2);border-radius:var(--rs);margin-bottom:12px;display:flex;align-items:flex-start;gap:8px}
+.gen-section{padding:12px;background:var(--bg2);border:1px solid var(--gborder);border-radius:var(--rs);margin-top:8px}
+.gen-section h4{font-size:13px;font-weight:600;margin-bottom:6px}
+.gen-item{padding:10px 12px;background:var(--surface);border:1px solid var(--gborder);border-radius:var(--rs);margin-bottom:6px}
+.gen-item:last-child{margin-bottom:0}
+.gen-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--accent);margin-bottom:3px}
+.gen-value{font-size:13px;line-height:1.5;word-break:break-word}
+.gen-value.tag-list{display:flex;flex-wrap:wrap;gap:4px}
+.gen-value.tag-list span{padding:2px 8px;background:rgba(108,92,231,0.12);color:var(--primary);border-radius:4px;font-size:11px}
+.gen-copy{font-size:10px;color:var(--text2);cursor:pointer;float:right;padding:2px 6px;border-radius:4px;transition:all var(--t)}
+.gen-copy:hover{background:var(--shover);color:var(--text)}
+.gen-diff{color:var(--success)}
 .warn-banner .wb-icon{font-size:16px;flex-shrink:0}
 .warn-banner .wb-text{flex:1}
 .warn-banner .wb-title{font-weight:600;font-size:12px;margin-bottom:2px}
@@ -387,6 +398,193 @@ function generateRecommendations(results){
   return recs;
 }
 
+// =============== GENERATION ENGINE ===============
+
+function extractKeywords(title,desc,tags,category){
+  let words=new Set();
+  if(title)title.split(/\s+/).filter(w=>w.length>3).forEach(w=>words.add(w.toLowerCase().replace(/[^a-z0-9]/g,'')));
+  if(desc)(desc.match(/\b[A-Za-z]{4,}\b/g)||[]).forEach(w=>words.add(w.toLowerCase()));
+  if(tags)tags.forEach(t=>t.split(/\s+/).filter(w=>w.length>3).forEach(w=>words.add(w.toLowerCase().replace(/[^a-z0-9]/g,''))));
+  let stop=new Set(['this','that','with','from','your','have','been','they','will','what','about','some','them','than','into','also','more','then','just','like','make','know','very','well','even','want','only','much','over']);
+  return [...words].filter(w=>!stop.has(w)&&w.length>3).slice(0,15);
+}
+
+function generateTitleSuggestions(vd){
+  let t=vd.title||'';
+  let kw=extractKeywords(t,vd.description,vd.tags,vd.category);
+  let primary=kw[0]||'content';
+  let secondary=kw[1]||'guide';
+  let suggestions=[];
+  let titleLower=t.toLowerCase();
+
+  let catWords={
+    'Music':['Song','Music','Audio','Track','Official Video'],
+    'Education':['Tutorial','Guide','Lesson','Course','Class'],
+    'Science & Technology':['Review','Tutorial','Explained','Guide','Tips'],
+    'Howto & Style':['Tutorial','Guide','Tips','How to','Ideas'],
+    'Gaming':['Gameplay','Walkthrough','Review','Tips','Guide'],
+    'Entertainment':['Funny','Best','Crazy','Amazing','Moments'],
+    'Comedy':['Funny','Hilarious','Best','Crazy','Compilation'],
+    'Sports':['Highlights','Best','Moments','Skills','Training'],
+    'News & Politics':['Update','Analysis','Report','Breaking','Explained'],
+    'Travel & Events':['Vlog','Travel Guide','Adventure','Tips','Best'],
+    'People & Blogs':['Vlog','Daily','Week','Life Update','Routine'],
+    'Pets & Animals':['Funny','Cute','Amazing','Best','Adorable'],
+  };
+  let cw=catWords[vd.category]||['Guide','Tips','Review','Tutorial','Ideas'];
+  let cwIdx=Math.floor(Math.random()*cw.length);
+
+  if(t&&!titleLower.includes('how to')&&primary){
+    suggestions.push({title:`How to ${primary}${secondary?' | '+secondary:''}`,why:'"How to" titles get 2x more clicks and rank well for question-based searches.'});
+  }
+  if(t&&primary){
+    let num=Math.floor(Math.random()*8)+3;
+    suggestions.push({title:`${num} ${primary} ${cw[cwIdx]}${secondary?' - '+secondary:''}`,why:'Numbered lists boost CTR by 36%. Numbers stand out in search results.'});
+  }
+  if(t){
+    let parts=t.split(/[|–—-]/);
+    let base=parts[0].trim();
+    if(base.length>30){
+      suggestions.push({title:`${primary}: ${secondary||'Complete Guide'} | ${cw[cwIdx%cw.length]} ${new Date().getFullYear()}`,why:'Clear keyword-first structure with pipe separator. Front-loads the primary keyword.'});
+    }else if(base.length<40){
+      suggestions.push({title:`${base} | ${cw[(cwIdx+1)%cw.length]} & ${cw[(cwIdx+2)%cw.length]}`,why:'Adding a pipe separator improves readability and can include more keywords.'});
+    }
+  }
+  if(t&&!/\d{4}/.test(t)){
+    suggestions.push({title:`${t.replace(/[|–—-].*$/,'').trim()} | ${cw[(cwIdx+2)%cw.length]} ${new Date().getFullYear()}`,why:'Adding the current year signals freshness and recency to searchers.'});
+  }
+  if(t&&kw.length>2){
+    suggestions.push({title:`${kw[0]} vs ${kw[1]}: ${kw.slice(2,4).join(' & ')} | Which is ${kw[2]||'Better'}?`,why:'Comparison titles ("X vs Y") have high click-through rates for informational content.'});
+  }
+  if(t&&!titleLower.startsWith('how')&&!titleLower.startsWith('what')&&!titleLower.startsWith('why')){
+    let qWords=['What','Why','How','When','Where'];
+    let q=qWords[Math.floor(Math.random()*qWords.length)];
+    suggestions.push({title:`${q} ${primary}${secondary?' '+secondary:''}? ${cw[cwIdx%cw.length]} Explained`,why:'Question-based titles match voice search and featured snippet intent.'});
+  }
+  suggestions=suggestions.slice(0,6);
+  suggestions.forEach(s=>{
+    if(s.title.length>70)s.title=s.title.substring(0,67)+'...';
+  });
+  return suggestions;
+}
+
+function generateDescription(vd){
+  let t=vd.title||'';
+  let kw=extractKeywords(t,vd.description,vd.tags,vd.category);
+  let primary=kw[0]||'this content';
+  let secondary=kw[1]||'';
+  let dur=vd.lengthSeconds;
+  let durMin=dur?Math.round(dur/60):null;
+
+  let lines=[];
+  lines.push(`In this video, we dive deep into ${primary}${secondary?' and '+secondary:''}. Whether you're a beginner or looking to level up, you'll find actionable tips and strategies to help you succeed.`);
+  lines.push('');
+  if(durMin&&durMin>3){
+    lines.push(`📌 TIMESTAMPS:`);
+    lines.push(`0:00 - Introduction`);
+    let sections=Math.min(5,Math.max(2,Math.floor(durMin/3)));
+    for(let i=1;i<=sections;i++){
+      let min=Math.floor(durMin*i/(sections+1));
+      let sec=String(Math.floor(Math.random()*60)).padStart(2,'0');
+      lines.push(`${min}:${sec} - ${kw[i%kw.length]||'Key Point '+(i)}`);
+    }
+    lines.push(`${durMin}:00 - Conclusion & Next Steps`);
+    lines.push('');
+  }
+  lines.push(`🔗 RESOURCES & LINKS:`);
+  lines.push(`📺 Subscribe for more ${primary} content: [YOUR_CHANNEL_LINK]`);
+  lines.push(`🌐 Website: [YOUR_WEBSITE]`);
+  lines.push(`📸 Instagram: [YOUR_INSTAGRAM]`);
+  lines.push(`🐦 Twitter/X: [YOUR_TWITTER]`);
+  lines.push('');
+  lines.push(`👍 If you found this helpful, please LIKE and SUBSCRIBE for more ${primary}${secondary?' and '+secondary:''} content!`);
+  lines.push(`💬 Comment below: What's your biggest challenge with ${primary}?`);
+  lines.push('');
+  let catHashtag=vd.category?vd.category.replace(/[^a-zA-Z0-9]/g,'').toLowerCase():'video';
+  let allHashtags=[primary,secondary,...kw.slice(0,3)].filter(Boolean).map(w=>'#'+w.replace(/[^a-zA-Z0-9]/g,''));
+  allHashtags.push('#'+catHashtag,'#YouTubeSEO','#VideoTips');
+  lines.push([...new Set(allHashtags)].slice(0,8).join(' '));
+
+  return lines.join('\n');
+}
+
+function generateTags(vd){
+  let t=vd.title||'';
+  let kw=extractKeywords(t,vd.description,vd.tags,vd.category);
+  let tags=new Set();
+
+  if(t){
+    t.split(/[|–—-]/).forEach(part=>{
+      let trimmed=part.trim();
+      if(trimmed.length>3&&trimmed.length<60)tags.add(trimmed);
+    });
+  }
+  kw.forEach(w=>{
+    tags.add(w);
+    if(w.endsWith('s'))tags.add(w.slice(0,-1));
+    if(!w.endsWith('s'))tags.add(w+'s');
+  });
+  let categoryTags={
+    'Music':['new song','official music video','song lyrics','artist name','album track'],
+    'Education':['online course','learn online','educational video','study tips','skill development'],
+    'Science & Technology':['tech review','gadgets','technology news','science explained','innovation'],
+    'Howto & Style':['diy tutorial','step by step','beginner guide','easy tutorial','how to make'],
+    'Gaming':['gaming','gameplay walkthrough','gaming tips','pro guide','game review'],
+    'Entertainment':['entertainment','viral video','trending','fun content','watch this'],
+    'Comedy':['funny video','comedy sketch','hilarious','laugh','comedy'],
+    'Sports':['sports highlights','training tips','athlete','workout','fitness'],
+    'Travel & Events':['travel vlog','wanderlust','travel guide','vacation','adventure travel'],
+    'People & Blogs':['vlog','daily life','personal story','lifestyle','my story'],
+  };
+  let ct=categoryTags[vd.category]||['tutorial','guide','tips','how to','beginners'];
+  ct.forEach(t=>tags.add(t));
+
+  let basePhrases=[`${kw[0]||'content'} tutorial`,`${kw[0]||'content'} guide`,`${kw[0]||'content'} tips`,`how to ${kw[0]||'learn'}`,`best ${kw[0]||'content'} ${new Date().getFullYear()}`];
+  basePhrases.forEach(p=>{if(p.length<60)tags.add(p)});
+
+  return [...tags].filter(t=>t.length>2&&t.length<60).slice(0,20);
+}
+
+function generateHashtags(vd){
+  let kw=extractKeywords(vd.title,vd.description,vd.tags,vd.category);
+  let hashtags=kw.slice(0,4).map(w=>'#'+w.replace(/[^a-zA-Z0-9]/g,''));
+  if(vd.category)hashtags.push('#'+vd.category.replace(/[^a-zA-Z0-9]/g,'').toLowerCase());
+  hashtags.push('#YouTubeSEO','#VideoMarketing','#ContentCreator');
+  return [...new Set(hashtags)].slice(0,8);
+}
+
+function generateThumbnailText(vd){
+  let kw=extractKeywords(vd.title,vd.description,vd.tags,vd.category);
+  let primary=kw[0]||'';
+  let suggestions=[];
+
+  if(primary){
+    suggestions.push({text:primary.toUpperCase(),why:'Single powerful keyword — clean and bold.'});
+  }
+  if(vd.title){
+    let words=vd.title.split(/\s+/).filter(w=>w.length>2).slice(0,3);
+    if(words.length>=2)suggestions.push({text:words.slice(0,2).join(' ').toUpperCase(),why:'Two-word phrase from your title — maintains relevance.'});
+    if(words.length>=3&&!/\d/.test(words.join('')))suggestions.push({text:words.slice(0,2).join(' ').toUpperCase()+'?',why:'Question format sparks curiosity and boosts CTR.'});
+  }
+  let num=vd.tags?vd.tags.filter(t=>/\d/.test(t)).map(t=>t.match(/\d+/)?.[0]).filter(Boolean).pop():null;
+  if(num)suggestions.push({text:num+' '+primary.toUpperCase(),why:'Number + keyword — highly effective for list/tutorial content.'});
+
+  let year=new Date().getFullYear();
+  suggestions.push({text:primary.toUpperCase()+' '+year,why:'Including the year signals fresh, up-to-date content.'});
+
+  return suggestions.slice(0,5);
+}
+
+function generateSEOCopy(vd){
+  return {
+    titles:generateTitleSuggestions(vd),
+    description:generateDescription(vd),
+    tags:generateTags(vd),
+    hashtags:generateHashtags(vd),
+    thumbText:generateThumbnailText(vd),
+  };
+}
+
 // =============== MAIN ===============
 
 async function analyze(){
@@ -546,8 +744,8 @@ function showResults(results,recs,vd,videoId){
   let grade=score>=80?'good':score>=50?'ok':'bad';
   let gradeText=score>=80?'Great SEO!':score>=50?'Needs Work':'Critical';
 
-  let tabKeys=['title','description','tags','thumbnail','channel','engagement','duration','published','category'];
-  let tabLabels={title:'🎯 Title',description:'📝 Description',tags:'🏷️ Tags',thumbnail:'🖼️ Thumbnail',channel:'📺 Channel',engagement:'❤️ Engagement',duration:'⏱️ Duration',published:'📅 Published',category:'📂 Category'};
+  let tabKeys=['title','description','tags','thumbnail','generate','channel','engagement','duration','published','category'];
+  let tabLabels={title:'🎯 Title',description:'📝 Description',tags:'🏷️ Tags',thumbnail:'🖼️ Thumbnail',generate:'✨ Generate','channel':'📺 Channel',engagement:'❤️ Engagement',duration:'⏱️ Duration',published:'📅 Published',category:'📂 Category'};
   let hasDesc=vd.description.length>0;
   let hasTags=vd.tags&&vd.tags.length>0;
   let autoStr=vd.source==='api'?'✅ YouTube Data API v3':vd.source==='inner'?'⚙️ Inner API (proxy)':'🔗 oEmbed';
@@ -616,7 +814,22 @@ function showResults(results,recs,vd,videoId){
       ${tabKeys.map((k,i)=>`<button class="tab-btn${i===0?' active':''}" data-tab="res-${k}" onclick="switchTab('res-${k}')">${tabLabels[k]}</button>`).join('')}
     </div>
 
-    ${tabKeys.map((k,i)=>`
+    ${tabKeys.map((k,i)=>{
+      if(k==='generate'){
+        return `
+      <div class="tab-body" id="res-generate">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+          <button class="btn-primary" style="font-size:13px;padding:10px 20px" onclick="generateSEO()">✨ Generate SEO Content</button>
+          <span style="font-size:11px;color:var(--text2)">Auto-generates optimized title, description, tags, hashtags &amp; thumbnail text based on your video data.</span>
+        </div>
+        <div id="genOutput">
+          <div style="padding:20px;text-align:center;color:var(--text2);font-size:13px">
+            Click "Generate SEO Content" to create AI-optimized metadata suggestions.
+          </div>
+        </div>
+      </div>`;
+      }
+      return `
       <div class="tab-body${i===0?' show':''}" id="res-${k}">
         <div class="source-badge">${k==='description'&&!hasDesc?'✏️ manual input':k==='tags'&&!hasTags?'✏️ manual input':autoStr}</div>
         <div class="checks">
@@ -631,8 +844,8 @@ function showResults(results,recs,vd,videoId){
             </div>
           `).join('')}
         </div>
-      </div>
-    `).join('')}
+      </div>`;
+    }).join('')}
   `;
 
   $('content').scrollIntoView({behavior:'smooth',block:'start'});
@@ -714,6 +927,76 @@ function manualAnalyze(videoId){
 
   let recs=generateRecommendations(results);
   showResults(results,recs,vd,videoId);
+}
+
+function generateSEO(){
+  let vd=buildVideoData(S.videoId,'maxresdefault');
+  if(!vd.title){toast('Need a title to generate SEO content');return}
+
+  let gen=generateSEOCopy(vd);
+  let desc=gen.description;
+  let descPreview=desc.split('\n').slice(0,3).join('\n')+'...';
+
+  $('genOutput').innerHTML=`
+    <div class="gen-section">
+      <h4>🎯 Title Suggestions</h4>
+      ${gen.titles.map((s,i)=>`
+        <div class="gen-item">
+          <span class="gen-copy" onclick="copyText('${esc(s.title)}')">📋 copy</span>
+          <div class="gen-label">Option ${i+1}</div>
+          <div class="gen-value">${esc(s.title)}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:3px">💡 ${s.why}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="gen-section">
+      <h4>📝 Description Template</h4>
+      <div class="gen-item">
+        <span class="gen-copy" onclick="copyText(${JSON.stringify(desc)})">📋 copy</span>
+        <div class="gen-label">SEO-Optimized Description</div>
+        <div class="gen-value" style="white-space:pre-wrap;font-size:12px">${esc(desc)}</div>
+      </div>
+    </div>
+
+    <div class="gen-section">
+      <h4>🏷️ Tags (${gen.tags.length})</h4>
+      <div class="gen-item">
+        <span class="gen-copy" onclick="copyText('${esc(gen.tags.join(', '))}')">📋 copy</span>
+        <div class="gen-label">Recommended Tags</div>
+        <div class="gen-value tag-list">${gen.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div>
+      </div>
+    </div>
+
+    <div class="gen-section">
+      <h4>#️⃣ Hashtags</h4>
+      <div class="gen-item">
+        <span class="gen-copy" onclick="copyText('${esc(gen.hashtags.join(' '))}')">📋 copy</span>
+        <div class="gen-label">Description Hashtags</div>
+        <div class="gen-value">${esc(gen.hashtags.join(' '))}</div>
+      </div>
+    </div>
+
+    <div class="gen-section">
+      <h4>🖼️ Thumbnail Text Overlay</h4>
+      ${gen.thumbText.map((s,i)=>`
+        <div class="gen-item">
+          <span class="gen-copy" onclick="copyText('${esc(s.text)}')">📋 copy</span>
+          <div class="gen-label">Option ${i+1}</div>
+          <div class="gen-value" style="font-size:16px;font-weight:700">${esc(s.text)}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:3px">💡 ${s.why}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  switchTab('res-generate');
+  toast('✅ SEO content generated!');
+}
+
+function copyText(t){
+  navigator.clipboard.writeText(t).then(()=>toast('📋 Copied!')).catch(()=>{
+    let ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('📋 Copied!');
+  });
 }
 
 function switchTab(id){
