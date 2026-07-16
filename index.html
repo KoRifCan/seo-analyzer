@@ -474,27 +474,40 @@ function generateThumbnailText(vd){
 
 // =============== AI ANALYSIS ===============
 
-async function callGemini(prompt, apiKey, retries=2) {
+async function callGemini(prompt, apiKey, retries=1) {
   if (!apiKey) return null;
-  for (let attempt=0; attempt<=retries; attempt++) {
-    try {
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-        signal: AbortSignal.timeout(120000)
-      });
-      if (!r.ok) { let e = await r.json().catch(()=>({})); throw new Error(e?.error?.message || 'Gemini API error'); }
-      const d = await r.json();
-      return d?.candidates?.[0]?.content?.parts?.[0]?.text || null;
-    } catch(e) {
-      if (attempt < retries && (e.name==='AbortError'||e.message.includes('timed out'))) {
-        await new Promise(r=>setTimeout(r,2000));
-        continue;
+  const models = ['gemini-3.5-flash','gemini-3.0-flash','gemini-3.1-flash-lite','gemini-2.5-flash'];
+  let lastErr = null;
+  for (const model of models) {
+    for (let attempt=0; attempt<=retries; attempt++) {
+      try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+          signal: AbortSignal.timeout(120000)
+        });
+        if (!r.ok) {
+          let e = await r.json().catch(()=>({}));
+          let msg = e?.error?.message || '';
+          if (r.status===404||r.status===403||r.status===429||/quota|not available|not found|disabled|permission|denied/i.test(msg)) {
+            lastErr = new Error(msg || `Model ${model} unavailable`);
+            break;
+          }
+          throw new Error(msg || 'Gemini API error');
+        }
+        const d = await r.json();
+        return d?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+      } catch(e) {
+        lastErr = e;
+        if ((e.name==='AbortError'||e.message.includes('timed out')) && attempt < retries) {
+          await new Promise(r=>setTimeout(r,2000));
+          continue;
+        }
+        break;
       }
-      throw e;
     }
   }
-  return null;
+  throw lastErr || new Error('All Gemini models failed');
 }
 
 function parseAISections(text) {
