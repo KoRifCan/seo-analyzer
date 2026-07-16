@@ -224,7 +224,7 @@ function qs(s){return document.querySelector(s)}
 function toast(m){let c=$('toast'),t=document.createElement('div');t.className='toast';t.textContent=m;c.appendChild(t);setTimeout(()=>t.remove(),4000)}
 function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',S.theme==='dark'?'':'light');$('themeBtn').textContent=S.theme==='dark'?'🌙':'☀️';try{localStorage.setItem('ytseo_theme',S.theme)}catch(e){}}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
-function jsStr(s){return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'')}
+function jsStr(s){return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\u0022').replace(/\n/g,'\\n').replace(/\r/g,'')}
 function toggleKeyGuide(){let g=$('keyGuide');g.style.display=g.style.display==='none'?'block':'none'}
 function fmtNum(n){if(!n||n==='0')return'—';n=Number(n);if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString()}
 function fmtDur(s){if(!s)return'—';let m=Math.floor(s/60),h=Math.floor(m/60);m=m%60;s=Math.floor(s%60);return h>0?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`}
@@ -1210,7 +1210,7 @@ function renderFullMetadata(v,ch){
   add('Channel',s.channelTitle);
   add('Channel ID',s.channelId);
   add('Category',CAT_MAP[s.categoryId]||s.categoryId);
-  add('Tags',s.tags&&s.tags.length?s.tags.join(', '):'(none)');
+  add('Tags',s.tags&&s.tags.length?s.tags.map(t=>t.replace(/^["']|["']$/g,'')).join(', '):'(none)');
   add('Default Language',s.defaultLanguage);
   add('Default Audio Lang',s.defaultAudioLanguage);
   add('Duration',cd.duration);
