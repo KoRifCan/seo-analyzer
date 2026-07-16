@@ -201,7 +201,8 @@ function $(id){return document.getElementById(id)}
 function qs(s){return document.querySelector(s)}
 function toast(m){let c=$('toast'),t=document.createElement('div');t.className='toast';t.textContent=m;c.appendChild(t);setTimeout(()=>t.remove(),4000)}
 function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',S.theme==='dark'?'':'light');$('themeBtn').textContent=S.theme==='dark'?'🌙':'☀️';try{localStorage.setItem('ytseo_theme',S.theme)}catch(e){}}
-function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function jsStr(s){return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'')}
 function fmtNum(n){if(!n||n==='0')return'—';n=Number(n);if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString()}
 function fmtDur(s){if(!s)return'—';let m=Math.floor(s/60),h=Math.floor(m/60);m=m%60;s=Math.floor(s%60);return h>0?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`}
 function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}catch(e){return d}}
@@ -532,6 +533,36 @@ function renderAIAnalysis(sections, score) {
   }).join('');
 }
 
+function renderAICopyReady(jsonData) {
+  if (!jsonData) return '';
+  let html = '<div class="card" style="margin-top:10px;padding:14px;background:linear-gradient(135deg,rgba(0,184,148,0.04),rgba(108,92,231,0.04));border:1px solid rgba(0,184,148,0.12)"><div class="section-title" style="margin-bottom:8px">📋 Copy-Paste <span class="st-badge">AI Generated</span><span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:auto">Click 📋 to copy</span></div>';
+  if (jsonData.titles && jsonData.titles.length) {
+    html += '<div style="margin-bottom:8px"><div class="gen-label" style="margin-bottom:4px">✨ Title Options</div>';
+    jsonData.titles.forEach(t => {
+      let text = typeof t === 'string' ? t : t.text;
+      html += `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--gborder)"><span class="gen-value" style="flex:1;font-size:13px">${esc(text)}</span><button class="btn-ghost" style="padding:3px 8px;font-size:10px" onclick="copyText('${jsStr(text)}')">📋</button></div>`;
+    });
+    html += '</div>';
+  }
+  if (jsonData.description) {
+    html += `<div style="margin-bottom:8px"><div class="gen-label" style="margin-bottom:4px">📝 Description Template</div><div style="display:flex;gap:6px;align-items:flex-start"><div class="gen-value" style="font-size:12px;line-height:1.7;white-space:pre-wrap;flex:1;max-height:150px;overflow-y:auto;background:var(--bg2);padding:8px 10px;border-radius:7px">${esc(jsonData.description)}</div><button class="btn-ghost" style="flex-shrink:0;padding:3px 8px;font-size:10px" onclick="copyText('${jsStr(jsonData.description)}')">📋</button></div></div>`;
+  }
+  if (jsonData.tags && jsonData.tags.length) {
+    html += `<div style="margin-bottom:8px"><div class="gen-label" style="margin-bottom:4px">🏷️ Tags (${jsonData.tags.length})</div><div style="display:flex;gap:6px;align-items:flex-start"><div class="gen-tags" style="flex:1">${jsonData.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div><button class="btn-ghost" style="flex-shrink:0;padding:3px 8px;font-size:10px" onclick="copyText('${jsStr(jsonData.tags.join(', '))}')">📋</button></div></div>`;
+  }
+  if (jsonData.hashtags && jsonData.hashtags.length) {
+    html += `<div style="margin-bottom:8px"><div class="gen-label" style="margin-bottom:4px">#️⃣ Hashtags</div><div style="display:flex;gap:6px;align-items:flex-start"><div class="gen-value" style="font-size:12px;background:var(--bg2);padding:6px 10px;border-radius:7px;flex:1">${esc(jsonData.hashtags.join(' '))}</div><button class="btn-ghost" style="flex-shrink:0;padding:3px 8px;font-size:10px" onclick="copyText('${jsStr(jsonData.hashtags.join(' '))}')">📋</button></div></div>`;
+  }
+  if (jsonData.thumbnailText && jsonData.thumbnailText.length) {
+    html += '<div><div class="gen-label" style="margin-bottom:4px">🖼️ Thumbnail Text</div>';
+    jsonData.thumbnailText.forEach(t => {
+      html += `<div style="display:flex;align-items:center;gap:6px;padding:4px 0"><span style="flex:1;font-size:14px;font-weight:700">${esc(t)}</span><button class="btn-ghost" style="padding:3px 8px;font-size:10px" onclick="copyText('${jsStr(t)}')">📋</button></div>`;
+    });
+    html += '</div>';
+  }
+  return html + '</div>';
+}
+
 async function generateAIAnalysis(vd) {
   const aiKey = $('aiApiKey').value.trim();
   if (!aiKey) {
@@ -576,15 +607,32 @@ Suggest thumbnail focus, text overlay, colors.
 ## Top 3 Quick Wins
 3 most impactful changes ordered by priority. Start each with "1. ", "2. ", "3. ".
 
-Keep each section concise (2-4 sentences). Be specific, not generic.`;
+After all ## sections, add a copyable JSON block at the end:
+---COPYPASTE---
+\`\`\`json
+{"titles":[{"text":"Title Option 1","reason":"why"}],"description":"Full description here","tags":["tag1","tag2"],"hashtags":["#tag1","#tag2"],"thumbnailText":["Text 1","Text 2"]}
+\`\`\`
+
+The titles must be 3 options. Description must be complete (200+ chars ready to paste). Tags 10-15. Hashtags 3-5. ThumbnailText 3 options. Keep each ## section concise (2-4 sentences). Be specific, not generic.`;
 
   try {
     const response = await callGemini(prompt, aiKey);
     if (!response) { $('aiOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>AI returned empty. Try again.</div>`; return; }
     const sections = parseAISections(response);
+    // Extract JSON block
+    let jsonMatch = response.match(/---COPYPASTE---\s*\`\`\`json\s*([\s\S]*?)\`\`\`/);
+    let copyData = null;
+    if (jsonMatch) {
+      try { copyData = JSON.parse(jsonMatch[1]); } catch(e) { copyData = null; }
+    }
+    // Fallback: try to find any JSON block
+    if (!copyData) {
+      let fallback = response.match(/\`\`\`json\s*([\s\S]*?)\`\`\`/);
+      if (fallback) { try { copyData = JSON.parse(fallback[1]); } catch(e) {} }
+    }
     let score = null;
     if (sections.length > 0) { const m = sections[0].content.match(/Score\s*[:：]?\s*(\d+)\s*\/\s*100/i); if (m) score = parseInt(m[1]); }
-    $('aiOutput').innerHTML = renderAIAnalysis(sections, score);
+    $('aiOutput').innerHTML = renderAIAnalysis(sections, score) + renderAICopyReady(copyData);
     toast('🤖 AI analysis complete!');
   } catch (e) {
     let msg = esc(e.message);
