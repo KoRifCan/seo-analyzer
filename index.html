@@ -474,16 +474,24 @@ function generateThumbnailText(vd){
 
 // =============== AI ANALYSIS ===============
 
+// Cache working model + try unused-quota models first
+const AI_MODELS = [
+  'antigravity','gemini-3.1-flash-lite','gemini-3.0-flash','gemini-3-flash',
+  'gemini-2.5-flash-lite','gemini-2.5-flash',
+  'gemini-3.5-flash',
+  'gemini-robotics-er-1-5-preview','gemini-robotics-er-1-6-preview',
+  'gemma-4-26b-it','gemma-4-31b-it',
+  'gemini-2.5-flash-tts','gemini-3.1-flash-tts'
+];
+
 async function callGemini(prompt, apiKey, retries=1) {
   if (!apiKey) return null;
-  const models = [
-    'gemini-3.5-flash','gemini-3.0-flash','gemini-3-flash',
-    'gemini-3.1-flash-lite','gemini-2.5-flash','gemini-2.5-flash-lite',
-    'gemma-4-26b-it','gemma-4-31b-it',
-    'antigravity',
-    'gemini-robotics-er-1-5-preview','gemini-robotics-er-1-6-preview',
-    'gemini-2.5-flash-tts','gemini-3.1-flash-tts'
-  ];
+  let cached = null;
+  try { cached = localStorage.getItem('ytseo_working_model'); } catch(e) {}
+  let models = AI_MODELS;
+  if (cached && AI_MODELS.includes(cached)) {
+    models = [cached, ...AI_MODELS.filter(m => m !== cached)];
+  }
   let lastErr = null;
   for (const model of models) {
     for (let attempt=0; attempt<=retries; attempt++) {
@@ -503,7 +511,10 @@ async function callGemini(prompt, apiKey, retries=1) {
           throw new Error(msg || 'API error');
         }
         const d = await r.json();
-        if (d?.candidates?.[0]?.content?.parts?.[0]?.text) return d.candidates[0].content.parts[0].text;
+        if (d?.candidates?.[0]?.content?.parts?.[0]?.text) {
+          try { localStorage.setItem('ytseo_working_model', model); } catch(e) {}
+          return { text: d.candidates[0].content.parts[0].text, model };
+        }
       } catch(e) {
         lastErr = e;
         if ((e.name==='AbortError'||e.message.includes('timed out')) && attempt < retries) {
@@ -661,8 +672,13 @@ After all ## sections, add a copyable JSON block at the end:
 The titles must be 3 options. Description must be complete (200+ chars ready to paste). Tags 10-15. Hashtags 3-5. ThumbnailText 3 options. thumbnailPrompt must be a detailed image generation prompt (50+ words). Keep each ## section concise (2-4 sentences). Be specific, not generic.`;
 
   try {
-    const response = await callGemini(prompt, aiKey);
-    if (!response) { $('aiOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>AI returned empty. Try again.</div>`; return; }
+    const result = await callGemini(prompt, aiKey);
+    if (!result || !result.text) { $('aiOutput').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>AI returned empty. Try again.</div>`; return; }
+    const response = result.text;
+    const modelUsed = result.model || 'unknown';
+    // Update badge with model name
+    let badge = document.querySelector('#sec-ai .st-badge');
+    if (badge) badge.textContent = modelUsed;
     const sections = parseAISections(response);
     // Extract JSON block
     let jsonMatch = response.match(/---COPYPASTE---\s*\`\`\`json\s*([\s\S]*?)\`\`\`/);
