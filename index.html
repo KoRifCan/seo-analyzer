@@ -543,30 +543,31 @@ function renderAIAnalysis(sections, score) {
     extra = `<div class="ai-score"><span class="score-badge ${g}">🤖 ${score}/100</span></div>`;
   }
   return extra + sections.map(s => {
-    let body = esc(s.content);
+    let clean = s.content.replace(/---COPYPASTE---[\s\S]*$/,'').trim();
+    let body = esc(clean);
     // Parse simple markdown: **bold** -> <strong>
     body = body.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     // Parse numbered items for Quick Wins
-    let items = s.header.includes('Quick Wins') ? s.content.match(/^\d+\.\s+.+/gm) : null;
+    let items = s.header.includes('Quick Wins') ? clean.match(/^\d+\.\s+.+/gm) : null;
     if (items) {
-      const rest = s.content.replace(/^\d+\.\s+.+(\n|$)/gm, '').trim();
+      const rest = clean.replace(/^\d+\.\s+.+(\n|$)/gm, '').trim();
       body = (rest ? `<div class="ai-section-body">${esc(rest).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>` : '') +
         items.map((item, i) => `<div class="ai-opt-item"><span class="ai-opt-label">Quick Win #${i+1}</span>${esc(item.replace(/^\d+\.\s+/, '')).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>`).join('');
     }
     // Parse title options
     if (s.header.includes('Title Analysis')) {
-      const opts = s.content.match(/\d\.\s+"[^"]+"/g);
+      const opts = clean.match(/\d\.\s+"[^"]+"/g);
       if (opts && opts.length >= 2) {
-        const intro = s.content.replace(/\d\.\s+"[^"]+"[^\n]*(\n|$)/g, '').trim();
+        const intro = clean.replace(/\d\.\s+"[^"]+"[^\n]*(\n|$)/g, '').trim();
         body = (intro ? `<div class="ai-section-body">${esc(intro).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>` : '') +
           opts.map(o => `<div class="ai-opt-item"><span class="ai-opt-label">Suggested Title</span>${esc(o).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>`).join('');
       }
     }
     // Parse tags
     if (s.header.includes('Tags Analysis')) {
-      const tags = s.content.match(/"([^"]+)"/g);
+      const tags = clean.match(/"([^"]+)"/g);
       if (tags && tags.length >= 3) {
-        const intro = s.content.replace(/"([^"]+)"/g, '').trim();
+        const intro = clean.replace(/"([^"]+)"/g, '').trim();
         body = (intro ? `<div class="ai-section-body">${esc(intro).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>` : '') +
           `<div class="gen-tags" style="margin-top:6px">${tags.map(t => `<span>${esc(t.replace(/"/g,''))}</span>`).join('')}</div>`;
       }
