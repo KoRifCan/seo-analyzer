@@ -1245,8 +1245,9 @@ function renderFullMetadata(v,ch){
     add('Total Channel Views',cst.viewCount?parseInt(cst.viewCount).toLocaleString():'0');
     if(cb.channel?.keywords){
       let kw=cb.channel.keywords;
-      // Try comma-separated; fallback to space-separated
-      kw=kw.includes(',')?kw.split(',').map(s=>s.trim()).join(', '):kw;
+      let m=kw.match(/"([^"]*)"/g);
+      if(m)kw=m.map(s=>s.replace(/^"|"$/g,'')).join(', ');
+      else if(kw.includes(','))kw=kw.split(',').map(s=>s.trim()).join(', ');
       add('Channel Keywords',kw);
     }
     if(cb.channel?.defaultTab)add('Default Tab',cb.channel.defaultTab);
