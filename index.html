@@ -744,7 +744,7 @@ The titles must be 3 options. Description must be complete (200+ chars ready to 
     S.aiCopyData = copyData; // cache for AI Generate
     $('aiOutput').innerHTML = renderAIAnalysis(sections, score) + renderAICopyReady(copyData);
     // Also update AI Generate section if it exists
-    if ($('genOutput')) generateSEO(true);
+    if ($('genOutput')) generateSEO('ai', false);
     toast('🤖 AI analysis complete!');
   } catch (e) {
     let msg = esc(e.message);
@@ -967,12 +967,13 @@ function showResults(results,recs,vd,videoId){
     </div>
 
     <div class="card fade-in" id="sec-generate">
-      <div class="section-title">✨ AI Generate <span class="st-badge">auto</span></div>
+      <div class="section-title">✨ AI Generate <span class="st-badge" id="genBadge">auto</span></div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
-        <span style="font-size:12px;color:var(--text2)">🤖 Optimized title, description, tags, hashtags &amp; thumbnail text.</span>
-        <button class="btn-ghost" style="margin-left:auto" onclick="generateSEO('refresh')">🔄 Refresh</button>
+        <span style="font-size:12px;color:var(--text2)">Choose generator mode:</span>
+        <button class="btn-ghost" onclick="generateSEO('ai',true)">🤖 AI Generate</button>
+        <button class="btn-ghost" onclick="generateSEO('rule',true)">⚙️ Rule Generate</button>
       </div>
-      <div id="genOutput"><div class="empty-state"><div class="empty-icon">🤖</div>Run AI Analysis to get optimized SEO content</div></div>
+      <div id="genOutput"><div class="empty-state"><div class="empty-icon">🤖</div>Click "AI Generate" or "Rule Generate" above</div></div>
     </div>
 
     <div class="card fade-in" id="sec-channel">
@@ -1063,33 +1064,42 @@ function normalizeAIData(d) {
   };
 }
 
-async function generateSEO(auto){
-  if (auto==='refresh') { S.aiCopyData = null; auto = false; }
+async function generateSEO(mode, scroll){
+  if (mode==='refresh') { S.aiCopyData = null; mode = 'ai'; }
   let vd=buildVideoData(S.videoId,'maxresdefault');
-  if(!vd.title){if(!auto)toast('Need a title to generate');return}
+  if(!vd.title){if(mode)toast('Need a title to generate');return}
   let gen = null; let source = 'rule';
-  // 1. Try cached AI data
-  if (S.aiCopyData) { gen = normalizeAIData(S.aiCopyData); source = 'AI'; }
-  // 2. If no cache, try fresh AI call
-  if (!gen) {
-    if (auto) $('genOutput').innerHTML=`<div class="empty-state"><div class="empty-icon">⏳</div>AI generating SEO content...</div>`;
-    try {
-      let r = await callGemini(
-        `Generate YouTube SEO JSON for: Title="${(vd.title||'').replace(/"/g,'\\"')}" Description="${(vd.description||'').replace(/"/g,'\\"').substring(0,300)}" Tags=${JSON.stringify(vd.tags||[])}. Return ONLY raw JSON: {"titles":[{"text":"...","reason":"..."}],"description":"...","tags":[],"hashtags":[],"thumbnailText":[],"thumbnailPrompt":"..."}. titles=3, description=200+ chars, tags=10-15, hashtags=3-5, thumbnailText=3. No markdown.`,
-        $('aiApiKey').value.trim()||DEFAULT_AI_KEY
-      );
-      if (r && r.text) {
-        let j = r.text; let s=j.indexOf('{'), e=j.lastIndexOf('}');
-        if (s>=0&&e>s) j=j.substring(s,e+1);
-        let d = JSON.parse(j);
-        if (d.titles && d.description) { gen = normalizeAIData(d); source = 'AI'; S.aiCopyData = d; }
-      }
-    } catch(e) {}
+  // Rule mode — direct, no cache
+  if (mode==='rule') {
+    gen = generateSEOCopy(vd);
+    source = 'rule';
   }
-  // 3. Last resort: rule-based
+  // AI mode — cache first, then fresh API call
+  if (mode==='ai' || mode===true) {
+    if (S.aiCopyData) {
+      gen = normalizeAIData(S.aiCopyData);
+      source = 'AI';
+    } else {
+      $('genOutput').innerHTML=`<div class="empty-state"><div class="empty-icon">⏳</div>AI generating content...</div>`;
+      try {
+        let r = await callGemini(
+          `Generate YouTube SEO JSON for: Title="${(vd.title||'').replace(/"/g,'\\"')}" Description="${(vd.description||'').replace(/"/g,'\\"').substring(0,300)}" Tags=${JSON.stringify(vd.tags||[])}. Return ONLY raw JSON: {"titles":[{"text":"...","reason":"..."}],"description":"...","tags":[],"hashtags":[],"thumbnailText":[],"thumbnailPrompt":"..."}. titles=3, description=200+ chars, tags=10-15, hashtags=3-5, thumbnailText=3. No markdown.`,
+          $('aiApiKey').value.trim()||DEFAULT_AI_KEY
+        );
+        if (r && r.text) {
+          let j = r.text; let s=j.indexOf('{'), e=j.lastIndexOf('}');
+          if (s>=0&&e>s) j=j.substring(s,e+1);
+          let d = JSON.parse(j);
+          if (d.titles && d.description) { gen = normalizeAIData(d); source = 'AI'; S.aiCopyData = d; }
+        }
+      } catch(e) {}
+    }
+  }
+  // Fallback if both modes failed
   if (!gen) { gen = generateSEOCopy(vd); source = 'rule'; }
   if (!gen) { $('genOutput').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div>Could not generate content.</div>`; return; }
 
+  let badge=$('genBadge'); if(badge)badge.textContent=source;
   $('genOutput').innerHTML=`
     <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">
       <div style="padding:12px 14px;border-bottom:1px solid var(--gborder)">
@@ -1148,8 +1158,8 @@ async function generateSEO(auto){
       </div>
     </div>` : ''}
   `;
-  if(!auto){let el=$('sec-generate');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
-  if(!auto)toast((source==='AI'?'🤖':'✅')+' SEO content regenerated!');
+  if(scroll){let el=$('sec-generate');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+  if(scroll)toast((source==='AI'?'🤖':'⚙️')+' SEO content generated!');
 }
 
 function copyText(t){
